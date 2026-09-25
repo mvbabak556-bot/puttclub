@@ -1,7 +1,8 @@
 import "dotenv/config";
 import { createHash } from "crypto";
 import { db } from "./index";
-import { categories, orders, products, reviews, users } from "./schema";
+import { categories, orders, products, reviews, siteSettings, users } from "./schema";
+import { SITE_DEFAULTS } from "@/lib/site-schema";
 
 const sha = (s: string) => createHash("sha256").update(s).digest("hex");
 
@@ -460,6 +461,7 @@ export async function seedDatabase(reset = true) {
     await db.delete(products);
     await db.delete(users);
     await db.delete(categories);
+    await db.delete(siteSettings);
   }
 
   for (const p of PRODUCTS) {

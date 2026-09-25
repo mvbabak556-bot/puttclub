@@ -91,3 +91,29 @@ export async function demoTable<T>(name: "products" | "categories" | "reviews"):
 export function saveDemoTable(name: "products" | "categories" | "reviews", rows: unknown[]) {
   writeLocal(`puttclub_demo_${name}`, rows);
 }
+
+/* ---------- تنظیمات سایت در حالت نمایشی ---------- */
+
+const SITE_KEY = "puttclub_demo_site";
+
+export async function demoSiteSettings(): Promise<Record<string, Record<string, unknown>>> {
+  let base: Record<string, Record<string, unknown>> = {};
+  try {
+    const res = await fetch(withBase("/data/site-settings.json"));
+    if (res.ok) base = (await res.json()) as Record<string, Record<string, unknown>>;
+  } catch {
+    base = {};
+  }
+  const overrides = readLocal<Record<string, Record<string, unknown>>>(SITE_KEY) ?? {};
+  const merged: Record<string, Record<string, unknown>> = {};
+  for (const k of new Set([...Object.keys(base), ...Object.keys(overrides)])) {
+    merged[k] = { ...(base[k] ?? {}), ...(overrides[k] ?? {}) };
+  }
+  return merged;
+}
+
+export function saveDemoSite(key: string, value: Record<string, unknown>) {
+  const overrides = readLocal<Record<string, Record<string, unknown>>>(SITE_KEY) ?? {};
+  overrides[key] = value;
+  writeLocal(SITE_KEY, overrides);
+}

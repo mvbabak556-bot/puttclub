@@ -17,14 +17,18 @@ try {
   const products = await pool.query("SELECT * FROM products ORDER BY id");
   const categories = await pool.query("SELECT * FROM categories ORDER BY id");
   const reviews = await pool.query("SELECT * FROM reviews ORDER BY id");
+  const site = await pool.query("SELECT key, value FROM site_settings");
 
   const dir = path.join(root, "public", "data");
   mkdirSync(dir, { recursive: true });
   writeFileSync(path.join(dir, "products.json"), JSON.stringify(products.rows));
   writeFileSync(path.join(dir, "categories.json"), JSON.stringify(categories.rows));
   writeFileSync(path.join(dir, "reviews.json"), JSON.stringify(reviews.rows));
+  const siteObj = {};
+  for (const r of site.rows) siteObj[r.key] = r.value;
+  writeFileSync(path.join(dir, "site-settings.json"), JSON.stringify(siteObj));
   console.log(
-    `snapshot: ${products.rows.length} products, ${categories.rows.length} categories, ${reviews.rows.length} reviews`
+    `snapshot: ${products.rows.length} products, ${categories.rows.length} categories, ${reviews.rows.length} reviews, ${site.rows.length} site sections`
   );
 } finally {
   await pool.end();

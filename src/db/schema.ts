@@ -84,3 +84,9 @@ export const categories = pgTable("categories", {
   image: text("image"),
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
+
+export const siteSettings = pgTable("site_settings", {
+  key: varchar("key", { length: 40 }).primaryKey(),
+  value: jsonb("value").notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+});

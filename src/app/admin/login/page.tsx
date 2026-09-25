@@ -4,19 +4,24 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
-import { Flag, Loader2, Lock, ShieldCheck, User } from "lucide-react";
+import { Flag, Globe, Loader2, Lock, ShieldCheck, ShoppingBag, User } from "lucide-react";
 import { DEMO_ADMIN, getAdmin, setAdmin } from "@/lib/admin";
 import { withBase } from "@/lib/public";
 
+type Panel = "store" | "site";
+
 export default function AdminLoginPage() {
   const router = useRouter();
+  const [panel, setPanel] = useState<Panel>("store");
   const [identifier, setIdentifier] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const dest = panel === "store" ? "/admin" : "/admin/site";
 
   useEffect(() => {
-    if (getAdmin()) router.replace("/admin");
+    if (getAdmin()) router.replace(dest);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [router]);
 
   const submit = async (e: React.FormEvent) => {
@@ -78,12 +83,43 @@ export default function AdminLoginPage() {
             <ShieldCheck size={24} />
           </span>
           <div>
-            <h1 className="text-xl font-black">ورود مدیر فروشگاه</h1>
+            <h1 className="text-xl font-black">ورود مدیران</h1>
             <p className="mt-1 text-xs text-sage">داشبورد مدیریتی پات‌کلاب</p>
           </div>
         </div>
 
-        <form onSubmit={submit} className="mt-8 space-y-4">
+        {/* انتخاب پنل: فروشگاه یا سایت */}
+        <div className="mt-8 grid grid-cols-2 gap-3">
+          {(
+            [
+              { key: "store", label: "فروشگاه", desc: "سفارش‌ها و محصولات", icon: ShoppingBag },
+              { key: "site", label: "سایت", desc: "محتوا، تصاویر و قالب", icon: Globe },
+            ] as const
+          ).map((p) => (
+            <button
+              key={p.key}
+              type="button"
+              onClick={() => setPanel(p.key)}
+              className={`rounded-2xl border p-4 text-start transition-all ${
+                panel === p.key
+                  ? "border-gold-500/60 bg-gold-500/10"
+                  : "border-gold-500/10 bg-forest-950/40 hover:border-gold-500/30"
+              }`}
+            >
+              <span
+                className={`grid size-10 place-items-center rounded-xl ${
+                  panel === p.key ? "bg-gold-500 text-forest-950" : "bg-forest-800 text-gold-400"
+                }`}
+              >
+                <p.icon size={19} />
+              </span>
+              <span className="mt-2.5 block text-sm font-black">{p.label}</span>
+              <span className="mt-0.5 block text-[11px] text-sage">{p.desc}</span>
+            </button>
+          ))}
+        </div>
+
+        <form onSubmit={submit} className="mt-6 space-y-4">
           <div className="relative">
             <User size={16} className="absolute start-4 top-1/2 -translate-y-1/2 text-sage" />
             <input
@@ -117,7 +153,7 @@ export default function AdminLoginPage() {
             className="inline-flex h-13 w-full items-center justify-center gap-2 rounded-full bg-gold-500 text-sm font-black text-forest-950 transition-colors hover:bg-gold-400 disabled:opacity-60"
           >
             {loading ? <Loader2 size={17} className="animate-spin" /> : <ShieldCheck size={17} />}
-            ورود به داشبورد
+            ورود به پنل {panel === "store" ? "فروشگاه" : "سایت"}
           </button>
         </form>
 

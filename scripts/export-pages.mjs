@@ -18,11 +18,13 @@ const originals = {
   config: path.join(root, "next.config.ts"),
   home: path.join(root, "src/app/page.tsx"),
   shop: path.join(root, "src/app/shop/page.tsx"),
+  academy: path.join(root, "src/app/academy/page.tsx"),
   product: path.join(root, "src/app/product/[slug]/page.tsx"),
 };
 cpSync(originals.config, path.join(backup, "next.config.ts"));
 cpSync(originals.home, path.join(backup, "page.tsx"));
 cpSync(originals.shop, path.join(backup, "shop.tsx"));
+cpSync(originals.academy, path.join(backup, "academy.tsx"));
 cpSync(originals.product, path.join(backup, "product.tsx"));
 cpSync(path.join(root, "src/app/api"), path.join(backup, "api"), { recursive: true });
 
@@ -30,6 +32,7 @@ function restore() {
   writeFileSync(originals.config, readFileSync(path.join(backup, "next.config.ts")));
   writeFileSync(originals.home, readFileSync(path.join(backup, "page.tsx")));
   writeFileSync(originals.shop, readFileSync(path.join(backup, "shop.tsx")));
+  writeFileSync(originals.academy, readFileSync(path.join(backup, "academy.tsx")));
   writeFileSync(originals.product, readFileSync(path.join(backup, "product.tsx")));
   rmSync(path.join(root, "src/app/api"), { recursive: true, force: true });
   cpSync(path.join(backup, "api"), path.join(root, "src/app/api"), { recursive: true });
@@ -61,7 +64,7 @@ export default nextConfig;
 
   rmSync(path.join(root, "src/app/api"), { recursive: true, force: true });
 
-  for (const file of [originals.home, originals.shop, originals.product]) {
+  for (const file of [originals.home, originals.shop, originals.academy, originals.product]) {
     writeFileSync(
       file,
       readFileSync(file, "utf8").replaceAll(

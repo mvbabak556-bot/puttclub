@@ -1,16 +1,8 @@
 import { CircleDot } from "lucide-react";
+import { SITE_DEFAULTS, type MarqueeSettings } from "@/lib/site-schema";
 
-const ITEMS = [
-  "آکادمی گلف پات کلاب — اهواز",
-  "آموزش از مبتدی تا حرفه‌ای",
-  "فروشگاه تجهیزات اورجینال",
-  "مشاوره تخصصی خرید",
-  "ارسال به سراسر کشور",
-  "ضمانت اصالت کالا",
-];
-
-export default function Marquee() {
-  const row = [...ITEMS, ...ITEMS];
+export default function Marquee({ data = SITE_DEFAULTS.marquee }: { data?: MarqueeSettings }) {
+  const row = [...data.items, ...data.items];
   return (
     <div className="relative overflow-hidden border-y border-gold-500/15 bg-forest-900 py-4">
       <div dir="ltr" className="flex w-max animate-marquee items-center gap-8">

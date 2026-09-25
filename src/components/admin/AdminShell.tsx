@@ -7,6 +7,7 @@ import { AnimatePresence, motion } from "framer-motion";
 import {
   Eye,
   FolderOpen,
+  Globe,
   LayoutDashboard,
   Loader2,
   LogOut,

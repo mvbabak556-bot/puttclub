@@ -9,16 +9,21 @@ import Logo from "@/components/Logo";
 import { useCartStore } from "@/lib/store";
 import type { SessionUser } from "@/lib/types";
 import { faNum } from "@/lib/format";
+import { ACADEMY } from "@/lib/academy";
+import {
+  SITE_DEFAULTS,
+  type BrandSettings,
+  type NavSettings,
+} from "@/lib/site-schema";
 
-const LINKS = [
-  { href: "/", label: "خانه" },
-  { href: "/#academy", label: "آکادمی" },
-  { href: "/#programs", label: "دوره‌ها" },
-  { href: "/shop", label: "فروشگاه" },
-  { href: "/#contact", label: "تماس" },
-];
-
-export default function Header() {
+export default function Header({
+  brand = ACADEMY as unknown as BrandSettings,
+  nav = SITE_DEFAULTS.nav,
+}: {
+  brand?: BrandSettings;
+  nav?: NavSettings;
+}) {
+  const LINKS = nav.links;
   const [scrolled, setScrolled] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
   const [user, setUser] = useState<SessionUser | null>(null);
@@ -47,7 +52,7 @@ export default function Header() {
   // صفحه نخست: ورود اعضای آکادمی — فروشگاه و بقیه صفحات: ورود اعضای فروشگاه (بدون تغییر)
   const memberHref = isHome ? "/academy" : user ? "/panel" : "/login";
   const memberLabel = isHome
-    ? "ورود اعضای آکادمی"
+    ? nav.academyButton
     : mounted && user
       ? "پنل من"
       : "ورود اعضا";

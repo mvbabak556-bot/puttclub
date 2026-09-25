@@ -1,7 +1,7 @@
 import { createHash } from "crypto";
 import { eq, sql } from "drizzle-orm";
 import { db } from "./index";
-import { categories, products, users } from "./schema";
+import { categories, products, siteSettings, users } from "./schema";
 
 const sha = (s: string) => createHash("sha256").update(s).digest("hex");
 
@@ -123,6 +123,19 @@ export function bootstrapDatabase(): Promise<void> {
             .set({ password: sha("Golf1405"), role: "admin" })
             .where(eq(users.email, "admin@puttclub.ir"));
           console.log("[puttclub] admin password migrated");
+        }
+        // تنظیمات پیش‌فرض سایت اگر نباشند
+        const { SITE_DEFAULTS } = await import("@/lib/site-schema");
+        const existing = await db.select({ key: siteSettings.key }).from(siteSettings);
+        const have = new Set(existing.map((r) => r.key));
+        const missing = (Object.keys(SITE_DEFAULTS) as (keyof typeof SITE_DEFAULTS)[]).filter(
+          (k) => !have.has(k)
+        );
+        if (missing.length > 0) {
+          await db
+            .insert(siteSettings)
+            .values(missing.map((k) => ({ key: k, value: SITE_DEFAULTS[k] })));
+          console.log(`[puttclub] site settings seeded (${missing.length} sections)`);
         }
       } catch (e) {
         console.error("[puttclub] bootstrap failed:", e);

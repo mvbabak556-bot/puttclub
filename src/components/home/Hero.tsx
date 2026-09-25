@@ -4,8 +4,7 @@ import { useRef, type ReactNode } from "react";
 import Link from "next/link";
 import { motion, useScroll, useTransform } from "framer-motion";
 import { ArrowLeft, ChevronDown, Flag, ShoppingBag, Sparkles } from "lucide-react";
-import { STOCK } from "@/lib/data";
-import { ACADEMY } from "@/lib/academy";
+import { SITE_DEFAULTS, type HeroSettings } from "@/lib/site-schema";
 import { withBase } from "@/lib/public";
 
 const EASE = [0.22, 1, 0.36, 1] as const;
@@ -25,13 +24,9 @@ function Line({ children, delay }: { children: ReactNode; delay: number }) {
   );
 }
 
-const STATS = [
-  { value: "اهواز", label: "خانه آکادمی" },
-  { value: "مبتدی تا حرفه‌ای", label: "سطوح آموزشی" },
-  { value: "puttclub.ir", label: "وب‌سایت رسمی" },
-];
+const isRemote = (src: string) => /^(https?:|data:|blob:)/.test(src);
 
-export default function Hero() {
+export default function Hero({ data = SITE_DEFAULTS.hero }: { data?: HeroSettings }) {
   const ref = useRef<HTMLElement>(null);
   const { scrollYProgress } = useScroll({
     target: ref,
@@ -43,7 +38,7 @@ export default function Hero() {
 
   return (
     <section ref={ref} className="relative flex min-h-svh flex-col overflow-hidden">
-      {/* Video background — فایل اصلی بدون هیچ تغییری؛ فقط نمایش شفاف‌تر شد */}
+      {/* Video background */}
       <motion.div style={{ y: videoY }} className="absolute inset-0 scale-105">
         <video
           className="size-full object-cover [filter:saturate(1.12)_contrast(1.06)_brightness(1.04)]"
@@ -52,9 +47,12 @@ export default function Hero() {
           loop
           playsInline
           preload="auto"
-          poster={STOCK.courseDawn}
+          poster={isRemote(data.poster) ? data.poster : withBase(data.poster)}
         >
-          <source src={withBase("/videos/golf-hero.mp4")} type="video/mp4" />
+          <source
+            src={isRemote(data.video) ? data.video : withBase(data.video)}
+            type="video/mp4"
+          />
         </video>
       </motion.div>
       <div className="absolute inset-0 bg-gradient-to-b from-forest-950/60 via-forest-950/20 to-forest-950" />
@@ -72,13 +70,13 @@ export default function Hero() {
           className="mb-8 inline-flex items-center gap-2 rounded-full border border-gold-500/30 bg-forest-950/40 px-4 py-2 text-xs font-medium text-gold-200 backdrop-blur"
         >
           <Sparkles size={14} className="text-gold-400" />
-          {ACADEMY.enName} — {ACADEMY.address}
+          {data.badge}
         </motion.div>
 
         <h1 className="text-[13.5vw] font-black leading-[1.12] tracking-tight sm:text-7xl lg:text-8xl">
-          <Line delay={0.3}>آکادمی گلف</Line>
+          <Line delay={0.3}>{data.title1}</Line>
           <Line delay={0.45}>
-            <span className="text-gold-grad">پات کلاب</span>
+            <span className="text-gold-grad">{data.title2}</span>
           </Line>
         </h1>
 
@@ -88,8 +86,7 @@ export default function Hero() {
           transition={{ duration: 0.9, delay: 0.75, ease: EASE }}
           className="mt-8 max-w-xl text-base leading-8 text-cream/75 sm:text-lg sm:leading-9"
         >
-          از اولین سوئینگ تا آمادگی مسابقه؛ آموزش اصولی گلف با مربیان حرفه‌ای در اهواز،
-          همراه با فروشگاه تخصصی تجهیزات اورجینال.
+          {data.subtitle}
         </motion.p>
 
         <motion.div
@@ -99,19 +96,19 @@ export default function Hero() {
           className="mt-10 flex flex-col items-center gap-3 sm:flex-row"
         >
           <Link
-            href="/academy"
+            href={data.primaryHref}
             className="group inline-flex items-center gap-2 rounded-full bg-gold-500 px-8 py-4 text-sm font-black text-forest-950 shadow-[0_16px_40px_-12px_rgba(201,162,75,0.6)] transition-all hover:bg-gold-400"
           >
             <Flag size={17} />
-            ورود اعضای آکادمی
+            {data.primaryLabel}
             <ArrowLeft size={17} className="transition-transform group-hover:-translate-x-1" />
           </Link>
           <Link
-            href="/shop"
+            href={data.secondaryHref}
             className="inline-flex items-center gap-2 rounded-full border border-cream/25 px-8 py-4 text-sm font-bold text-cream backdrop-blur transition-all hover:border-gold-400 hover:text-gold-300"
           >
             <ShoppingBag size={17} />
-            فروشگاه تجهیزات
+            {data.secondaryLabel}
           </Link>
         </motion.div>
 
@@ -122,7 +119,7 @@ export default function Hero() {
           transition={{ duration: 0.9, delay: 1.1, ease: EASE }}
           className="mt-16 flex items-center gap-8 sm:gap-12"
         >
-          {STATS.map((s, i) => (
+          {data.stats.map((s, i) => (
             <div key={s.label} className="flex items-center gap-8 sm:gap-12">
               {i > 0 && <span className="h-9 w-px bg-gold-500/25" />}
               <div className="text-center">

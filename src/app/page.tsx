@@ -3,6 +3,7 @@ import { db } from "@/db";
 import { products } from "@/db/schema";
 import { toCardData, type ProductCardData } from "@/lib/types";
 import { bootstrapDatabase } from "@/db/bootstrap";
+import { getSiteSettings } from "@/lib/site-settings";
 import Hero from "@/components/home/Hero";
 import Marquee from "@/components/home/Marquee";
 import About from "@/components/home/About";
@@ -33,29 +34,21 @@ async function getFeatured(): Promise<ProductCardData[]> {
 }
 
 export default async function HomePage() {
-  const featured = await getFeatured();
+  const [featured, s] = await Promise.all([getFeatured(), getSiteSettings()]);
+  const v = s.layout.visibility;
 
   return (
     <>
-      <Hero />
-      <Marquee />
-      <About />
-      <Programs />
-      <Featured
-        items={featured}
-        kicker="فروشگاه پات کلاب"
-        title={
-          <>
-            از <span className="text-gold-grad">فروشگاه</span> آکادمی
-          </>
-        }
-        desc="تجهیزات اورجینال با ضمانت اصالت؛ همان چیزی که در آکادمی با آن تمرین می‌کنید، برای خانه شما."
-      />
-      <FeaturesStrip />
-      <QuoteBanner />
-      <Testimonials />
-      <Contact />
-      <CtaBanner />
+      <Hero data={s.hero} />
+      {v.marquee && <Marquee data={s.marquee} />}
+      {v.about && <About data={s.about} brand={s.brand} />}
+      {v.programs && <Programs data={s.programs} />}
+      {v.featured && <Featured items={featured} data={s.featured} />}
+      {v.features && <FeaturesStrip data={s.features} />}
+      {v.quote && <QuoteBanner data={s.quote} />}
+      {v.testimonials && <Testimonials data={s.testimonials} />}
+      {v.contact && <Contact data={s.contact} brand={s.brand} />}
+      {v.cta && <CtaBanner data={s.cta} />}
     </>
   );
 }
