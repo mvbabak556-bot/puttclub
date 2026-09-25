@@ -19,10 +19,16 @@ const playfair = Playfair_Display({
   display: "swap",
 });
 
+const base = process.env.NEXT_PUBLIC_BASE_PATH || "";
+
 export const metadata: Metadata = {
-  title: "پات‌کلاب | فروشگاه تخصصی گلف",
+  title: "آکادمی گلف پات کلاب | Putt Club Golf Academy",
   description:
-    "پات‌کلاب؛ بوتیک پریمیوم تجهیزات گلف — چوب، توپ، کفش، پوشاک و لوازم جانبی اورجینال با ضمانت اصالت و ارسال سریع به سراسر کشور.",
+    "آکادمی گلف پات کلاب در اهواز؛ آموزش گلف از مبتدی تا حرفه‌ای، ورود اعضای آکادمی و فروشگاه تخصصی تجهیزات اورجینال گلف.",
+  icons: {
+    icon: `${base}/favicon.ico`,
+    apple: `${base}/images/academy-logo.jpg`,
+  },
 };
 
 export default function RootLayout({ children }: { children: ReactNode }) {

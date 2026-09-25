@@ -5,15 +5,16 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { AnimatePresence, motion } from "framer-motion";
 import { Flag, LayoutGrid, Menu, ShoppingBag, User, X } from "lucide-react";
+import Logo from "@/components/Logo";
 import { useCartStore } from "@/lib/store";
 import type { SessionUser } from "@/lib/types";
 import { faNum } from "@/lib/format";
 
 const LINKS = [
   { href: "/", label: "خانه" },
+  { href: "/#academy", label: "آکادمی" },
+  { href: "/#programs", label: "دوره‌ها" },
   { href: "/shop", label: "فروشگاه" },
-  { href: "/#collections", label: "کالکشن‌ها" },
-  { href: "/#testimonials", label: "نظر اعضا" },
   { href: "/#contact", label: "تماس" },
 ];
 
@@ -41,6 +42,15 @@ export default function Header() {
   }, []);
 
   const count = items.reduce((s, i) => s + i.qty, 0);
+  const isHome = pathname === "/";
+
+  // صفحه نخست: ورود اعضای آکادمی — فروشگاه و بقیه صفحات: ورود اعضای فروشگاه (بدون تغییر)
+  const memberHref = isHome ? "/academy" : user ? "/panel" : "/login";
+  const memberLabel = isHome
+    ? "ورود اعضای آکادمی"
+    : mounted && user
+      ? "پنل من"
+      : "ورود اعضا";
 
   return (
     <header
@@ -51,20 +61,7 @@ export default function Header() {
       }`}
     >
       <div className="mx-auto flex h-16 max-w-7xl items-center justify-between gap-4 px-4 sm:h-20 sm:px-6 lg:px-8">
-        {/* Logo */}
-        <Link href="/" className="group flex items-center gap-2.5">
-          <span className="grid size-10 place-items-center rounded-full border border-gold-500/40 bg-forest-800 text-gold-400 transition-colors group-hover:bg-gold-500 group-hover:text-forest-950">
-            <Flag size={20} strokeWidth={1.8} />
-          </span>
-          <span className="leading-none">
-            <span className="block font-display text-xl italic tracking-wide text-cream sm:text-2xl">
-              Putt<span className="text-gold-400">Club</span>
-            </span>
-            <span className="mt-1 block text-[10px] font-medium text-sage">
-              فروشگاه تخصصی گلف
-            </span>
-          </span>
-        </Link>
+        <Logo />
 
         {/* Desktop nav */}
         <nav className="hidden items-center gap-7 lg:flex">
@@ -82,11 +79,15 @@ export default function Header() {
         {/* Actions */}
         <div className="flex items-center gap-2 sm:gap-3">
           <Link
-            href={user ? "/panel" : "/login"}
+            href={memberHref}
             className="hidden items-center gap-2 rounded-full border border-gold-500/30 px-4 py-2 text-sm font-medium text-gold-300 transition-all hover:border-gold-400 hover:bg-gold-500/10 sm:inline-flex"
           >
-            <User size={16} strokeWidth={1.8} />
-            {mounted && user ? "پنل من" : "ورود اعضا"}
+            {isHome ? (
+              <Flag size={16} strokeWidth={1.8} />
+            ) : (
+              <User size={16} strokeWidth={1.8} />
+            )}
+            {memberLabel}
           </Link>
 
           <button
@@ -139,12 +140,18 @@ export default function Header() {
                 </Link>
               ))}
               <Link
-                href={user ? "/panel" : "/login"}
+                href={memberHref}
                 onClick={() => setMenuOpen(false)}
                 className="mt-2 flex items-center gap-2 rounded-xl bg-gold-500 px-4 py-3 text-sm font-bold text-forest-950"
               >
-                {user ? <LayoutGrid size={16} /> : <User size={16} />}
-                {user ? "پنل اعضا" : "ورود / ثبت‌نام اعضا"}
+                {isHome ? (
+                  <Flag size={16} />
+                ) : user ? (
+                  <LayoutGrid size={16} />
+                ) : (
+                  <User size={16} />
+                )}
+                {isHome ? "ورود اعضای آکادمی" : user ? "پنل اعضا" : "ورود / ثبت‌نام اعضا"}
               </Link>
             </div>
           </motion.nav>

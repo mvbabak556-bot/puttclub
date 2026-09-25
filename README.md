@@ -1,13 +1,26 @@
-# پات‌کلاب | فروشگاه تخصصی گلف
+# آکادمی گلف پات کلاب | Putt Club Golf Academy
 
-فقط پلن A. فروشگاه فول‌استک Next.js با Drizzle و PostgreSQL، منتشرشده برای عموم روی GitHub Pages.
+فقط پلن A. صفحه نخست، وب‌سایت رسمی آکادمی است (اهواز — puttclub.ir) و فروشگاه
+تجهیزات در مسیر `/shop` قرار دارد. ساخته‌شده با Next.js، Drizzle و PostgreSQL.
 
 ## لینک زنده
 
 https://mvbabak556-bot.github.io/puttclub/
 
-ریپو: https://github.com/mvbabak556-bot/puttclub
+## بخش‌ها
 
-## ورود نمونه
+- `/` — خانه آکادمی (معرفی، دوره‌ها، فروشگاه، تماس)
+- `/academy` — ورود اعضای آکادمی؛ عمداً خالی است تا پنل آکادمی (در حال ساخت
+  جداگانه) با متغیر `NEXT_PUBLIC_ACADEMY_PANEL_URL` به آن متصل شود
+- `/shop` — فروشگاه تجهیزات (ورود اعضای فروشگاه بدون تغییر باقی مانده است)
+
+## ورود نمونه فروشگاه
 
 `demo@puttclub.ir` / `demo1234`
+
+## اطلاعات آکادمی
+
+- تلفن: ۰۹۳۶۹۰۱۸۲۸۵
+- ایمیل: info@puttclub.ir
+- آدرس: اهواز
+- اینستاگرام: Puttclub.Golfacademy

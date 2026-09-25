@@ -4,11 +4,13 @@ import { products } from "@/db/schema";
 import { toCardData, type ProductCardData } from "@/lib/types";
 import Hero from "@/components/home/Hero";
 import Marquee from "@/components/home/Marquee";
-import Collections from "@/components/home/Collections";
+import About from "@/components/home/About";
+import Programs from "@/components/home/Programs";
 import Featured from "@/components/home/Featured";
 import QuoteBanner from "@/components/home/QuoteBanner";
 import FeaturesStrip from "@/components/home/FeaturesStrip";
 import Testimonials from "@/components/home/Testimonials";
+import Contact from "@/components/home/Contact";
 import CtaBanner from "@/components/home/CtaBanner";
 
 export const dynamic = "force-dynamic";
@@ -35,11 +37,22 @@ export default async function HomePage() {
     <>
       <Hero />
       <Marquee />
-      <Collections />
-      <Featured items={featured} />
-      <QuoteBanner />
+      <About />
+      <Programs />
+      <Featured
+        items={featured}
+        kicker="فروشگاه پات کلاب"
+        title={
+          <>
+            از <span className="text-gold-grad">فروشگاه</span> آکادمی
+          </>
+        }
+        desc="تجهیزات اورجینال با ضمانت اصالت؛ همان چیزی که در آکادمی با آن تمرین می‌کنید، برای خانه شما."
+      />
       <FeaturesStrip />
+      <QuoteBanner />
       <Testimonials />
+      <Contact />
       <CtaBanner />
     </>
   );

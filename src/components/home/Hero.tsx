@@ -1,10 +1,12 @@
 "use client";
 
 import { useRef, type ReactNode } from "react";
+import Image from "next/image";
 import Link from "next/link";
 import { motion, useScroll, useTransform } from "framer-motion";
-import { ArrowLeft, ChevronDown, Sparkles } from "lucide-react";
+import { ArrowLeft, ChevronDown, Flag, ShoppingBag, Sparkles } from "lucide-react";
 import { STOCK } from "@/lib/data";
+import { ACADEMY } from "@/lib/academy";
 import { withBase } from "@/lib/public";
 
 const EASE = [0.22, 1, 0.36, 1] as const;
@@ -25,9 +27,9 @@ function Line({ children, delay }: { children: ReactNode; delay: number }) {
 }
 
 const STATS = [
-  { value: "+۵٬۰۰۰", label: "گلف‌باز فعال" },
-  { value: "۲۴ ساعته", label: "ارسال سریع" },
-  { value: "۱۰۰٪", label: "ضمانت اصالت" },
+  { value: "اهواز", label: "خانه آکادمی" },
+  { value: "مبتدی تا حرفه‌ای", label: "سطوح آموزشی" },
+  { value: "puttclub.ir", label: "وب‌سایت رسمی" },
 ];
 
 export default function Hero() {
@@ -36,27 +38,28 @@ export default function Hero() {
     target: ref,
     offset: ["start start", "end start"],
   });
-  const videoY = useTransform(scrollYProgress, [0, 1], ["0%", "22%"]);
-  const contentY = useTransform(scrollYProgress, [0, 1], ["0%", "55%"]);
+  const videoY = useTransform(scrollYProgress, [0, 1], ["0%", "12%"]);
+  const contentY = useTransform(scrollYProgress, [0, 1], ["0%", "40%"]);
   const opacity = useTransform(scrollYProgress, [0, 0.7], [1, 0]);
 
   return (
     <section ref={ref} className="relative flex min-h-svh flex-col overflow-hidden">
-      {/* Video background */}
-      <motion.div style={{ y: videoY }} className="absolute inset-0 scale-110">
+      {/* Video background — فایل اصلی بدون هیچ تغییری؛ فقط نمایش شفاف‌تر شد */}
+      <motion.div style={{ y: videoY }} className="absolute inset-0 scale-105">
         <video
-          className="size-full object-cover"
+          className="size-full object-cover [filter:saturate(1.12)_contrast(1.06)_brightness(1.04)]"
           autoPlay
           muted
           loop
           playsInline
+          preload="auto"
           poster={STOCK.courseDawn}
         >
           <source src={withBase("/videos/golf-hero.mp4")} type="video/mp4" />
         </video>
       </motion.div>
-      <div className="absolute inset-0 bg-gradient-to-b from-forest-950/85 via-forest-950/30 to-forest-950" />
-      <div className="absolute inset-0 bg-gradient-to-l from-forest-950/55 via-transparent to-forest-950/45" />
+      <div className="absolute inset-0 bg-gradient-to-b from-forest-950/60 via-forest-950/20 to-forest-950" />
+      <div className="absolute inset-0 bg-gradient-to-l from-forest-950/35 via-transparent to-forest-950/30" />
 
       {/* Content */}
       <motion.div
@@ -70,45 +73,63 @@ export default function Hero() {
           className="mb-8 inline-flex items-center gap-2 rounded-full border border-gold-500/30 bg-forest-950/40 px-4 py-2 text-xs font-medium text-gold-200 backdrop-blur"
         >
           <Sparkles size={14} className="text-gold-400" />
-          بوتیک تخصصی تجهیزات گلف در ایران
+          {ACADEMY.enName} — {ACADEMY.address}
+        </motion.div>
+
+        {/* لوگوی رسمی آکادمی — بدون هیچ تغییری */}
+        <motion.div
+          initial={{ opacity: 0, scale: 0.9 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ duration: 0.9, delay: 0.25, ease: EASE }}
+          className="relative mb-8 size-32 overflow-hidden rounded-3xl border border-gold-500/30 bg-black shadow-[0_20px_60px_-15px_rgba(0,0,0,0.8)] sm:size-36"
+        >
+          <Image
+            src={ACADEMY.logo}
+            alt="لوگوی آکادمی گلف پات کلاب"
+            fill
+            sizes="144px"
+            className="object-contain"
+            priority
+          />
         </motion.div>
 
         <h1 className="text-[13.5vw] font-black leading-[1.12] tracking-tight sm:text-7xl lg:text-8xl">
-          <Line delay={0.3}>بازیِ تو</Line>
-          <Line delay={0.45}>از این‌جا</Line>
-          <Line delay={0.6}>
-            <span className="text-gold-grad">شروع می‌شود</span>
+          <Line delay={0.3}>آکادمی گلف</Line>
+          <Line delay={0.45}>
+            <span className="text-gold-grad">پات کلاب</span>
           </Line>
         </h1>
 
         <motion.p
           initial={{ opacity: 0, y: 22 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.9, delay: 0.9, ease: EASE }}
+          transition={{ duration: 0.9, delay: 0.75, ease: EASE }}
           className="mt-8 max-w-xl text-base leading-8 text-cream/75 sm:text-lg sm:leading-9"
         >
-          از درایورهای تور تا توپ‌های اسپین‌بالا؛ هر آنچه برای فرینج‌های بی‌نقص نیاز دارید،
-          دست‌چین‌شده و با ضمانت اصالت در پات‌کلاب.
+          از اولین سوئینگ تا آمادگی مسابقه؛ آموزش اصولی گلف با مربیان حرفه‌ای در اهواز،
+          همراه با فروشگاه تخصصی تجهیزات اورجینال.
         </motion.p>
 
         <motion.div
           initial={{ opacity: 0, y: 22 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.9, delay: 1.05, ease: EASE }}
+          transition={{ duration: 0.9, delay: 0.9, ease: EASE }}
           className="mt-10 flex flex-col items-center gap-3 sm:flex-row"
         >
           <Link
-            href="/shop"
+            href="/academy"
             className="group inline-flex items-center gap-2 rounded-full bg-gold-500 px-8 py-4 text-sm font-black text-forest-950 shadow-[0_16px_40px_-12px_rgba(201,162,75,0.6)] transition-all hover:bg-gold-400"
           >
-            ورود به فروشگاه
+            <Flag size={17} />
+            ورود اعضای آکادمی
             <ArrowLeft size={17} className="transition-transform group-hover:-translate-x-1" />
           </Link>
           <Link
-            href="/#collections"
+            href="/shop"
             className="inline-flex items-center gap-2 rounded-full border border-cream/25 px-8 py-4 text-sm font-bold text-cream backdrop-blur transition-all hover:border-gold-400 hover:text-gold-300"
           >
-            مشاهده کالکشن‌ها
+            <ShoppingBag size={17} />
+            فروشگاه تجهیزات
           </Link>
         </motion.div>
 
@@ -116,14 +137,16 @@ export default function Hero() {
         <motion.div
           initial={{ opacity: 0, y: 24 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.9, delay: 1.25, ease: EASE }}
+          transition={{ duration: 0.9, delay: 1.1, ease: EASE }}
           className="mt-16 flex items-center gap-8 sm:gap-12"
         >
           {STATS.map((s, i) => (
             <div key={s.label} className="flex items-center gap-8 sm:gap-12">
               {i > 0 && <span className="h-9 w-px bg-gold-500/25" />}
               <div className="text-center">
-                <div className="text-xl font-black text-gold-300 sm:text-2xl">{s.value}</div>
+                <div className="text-xl font-black text-gold-300 sm:text-2xl" dir="auto">
+                  {s.value}
+                </div>
                 <div className="mt-1 text-[11px] text-cream/60 sm:text-xs">{s.label}</div>
               </div>
             </div>
