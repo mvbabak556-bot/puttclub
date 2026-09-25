@@ -6,7 +6,7 @@ import { withBase } from "@/lib/public";
 export default function Logo() {
   return (
     <Link href="/" className="group flex items-center gap-3">
-      <span className="relative size-11 shrink-0 overflow-hidden rounded-xl border border-gold-500/40 bg-black transition-colors group-hover:border-gold-400">
+      <span className="relative size-11 shrink-0 overflow-hidden rounded-xl border border-gold-500/40 bg-white p-1 transition-colors group-hover:border-gold-400">
         <Image
           src={withBase(ACADEMY.logo)}
           alt="لوگوی آکادمی گلف پات کلاب"

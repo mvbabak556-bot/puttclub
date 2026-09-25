@@ -2,10 +2,7 @@ import type { Metadata } from "next";
 import type { ReactNode } from "react";
 import { Vazirmatn, Playfair_Display } from "next/font/google";
 import "./globals.css";
-import Header from "@/components/Header";
-import Footer from "@/components/Footer";
-import CartDrawer from "@/components/CartDrawer";
-import ScrollProgress from "@/components/ScrollProgress";
+import SiteShell from "@/components/SiteShell";
 
 const vazir = Vazirmatn({
   subsets: ["arabic", "latin"],
@@ -35,11 +32,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
   return (
     <html lang="fa" dir="rtl" className={`${vazir.variable} ${playfair.variable}`}>
       <body className="bg-forest-950 font-vazir text-cream antialiased">
-        <ScrollProgress />
-        <Header />
-        <main className="min-h-screen">{children}</main>
-        <Footer />
-        <CartDrawer />
+        <SiteShell>{children}</SiteShell>
       </body>
     </html>
   );

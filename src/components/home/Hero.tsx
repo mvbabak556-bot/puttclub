@@ -81,7 +81,7 @@ export default function Hero() {
           initial={{ opacity: 0, scale: 0.9 }}
           animate={{ opacity: 1, scale: 1 }}
           transition={{ duration: 0.9, delay: 0.25, ease: EASE }}
-          className="relative mb-8 size-32 overflow-hidden rounded-3xl border border-gold-500/30 bg-black shadow-[0_20px_60px_-15px_rgba(0,0,0,0.8)] sm:size-36"
+          className="relative mb-8 size-32 overflow-hidden rounded-3xl border border-gold-500/30 bg-white p-2 shadow-[0_20px_60px_-15px_rgba(0,0,0,0.8)] sm:size-36"
         >
           <Image
             src={withBase(ACADEMY.logo)}

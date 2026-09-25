@@ -31,7 +31,7 @@ export default function About() {
                 aria-hidden
                 className="absolute -inset-6 rounded-[2.5rem] bg-gold-500/10 blur-2xl"
               />
-              <div className="relative overflow-hidden rounded-[2rem] border border-gold-500/25 bg-black shadow-2xl">
+              <div className="relative overflow-hidden rounded-[2rem] border border-gold-500/25 bg-white p-3 shadow-2xl sm:p-4">
                 <Image
                   src={withBase(ACADEMY.logo)}
                   alt="لوگوی آکادمی گلف پات کلاب"

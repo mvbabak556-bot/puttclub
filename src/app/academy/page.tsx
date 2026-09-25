@@ -30,7 +30,7 @@ export default function AcademyEntryPage() {
         initial={{ opacity: 0, scale: 0.92 }}
         animate={{ opacity: 1, scale: 1 }}
         transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
-        className="relative size-36 overflow-hidden rounded-3xl border border-gold-500/30 bg-black shadow-2xl sm:size-44"
+        className="relative size-36 overflow-hidden rounded-3xl border border-gold-500/30 bg-white p-2 shadow-2xl sm:size-44"
       >
         <Image
           src={withBase(ACADEMY.logo)}

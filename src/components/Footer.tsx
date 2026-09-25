@@ -13,7 +13,7 @@ export default function Footer() {
           {/* Brand */}
           <div>
             <Link href="/" className="flex items-center gap-3">
-              <span className="relative size-14 shrink-0 overflow-hidden rounded-2xl border border-gold-500/40 bg-black">
+              <span className="relative size-14 shrink-0 overflow-hidden rounded-2xl border border-gold-500/40 bg-white p-1">
                 <Image
                   src={withBase(ACADEMY.logo)}
                   alt="لوگوی آکادمی گلف پات کلاب"
