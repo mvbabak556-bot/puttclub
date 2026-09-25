@@ -493,7 +493,7 @@ export async function seedDatabase(reset = true) {
   await db.insert(users).values({
     name: "مدیر فروشگاه",
     email: "admin@puttclub.ir",
-    password: sha("admin1234"),
+    password: sha("Golf1405"),
     phone: "09123456780",
     role: "admin",
   });

@@ -9,19 +9,24 @@ export const dynamic = "force-dynamic";
 
 const sha = (s: string) => createHash("sha256").update(s).digest("hex");
 
+/** نام کاربری مدیر معادل ایمیل داخلی آن است */
+const ADMIN_EMAIL = "admin@puttclub.ir";
+
 export async function POST(req: Request) {
   try {
     await bootstrapDatabase();
     const { email, password } = await req.json();
     if (!email || !password) {
-      return NextResponse.json({ error: "ایمیل و رمز عبور الزامی است." }, { status: 400 });
+      return NextResponse.json({ error: "نام کاربری و رمز عبور الزامی است." }, { status: 400 });
     }
+    const identifier = String(email).toLowerCase().trim();
+    const lookupEmail = identifier === "admin" ? ADMIN_EMAIL : identifier;
     const [user] = await db
       .select()
       .from(users)
-      .where(eq(users.email, String(email).toLowerCase().trim()));
+      .where(eq(users.email, lookupEmail));
     if (!user || user.password !== sha(String(password))) {
-      return NextResponse.json({ error: "ایمیل یا رمز عبور اشتباه است." }, { status: 401 });
+      return NextResponse.json({ error: "نام کاربری یا رمز عبور اشتباه است." }, { status: 401 });
     }
     if (user.role !== "admin") {
       return NextResponse.json(

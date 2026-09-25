@@ -103,7 +103,7 @@ export function bootstrapDatabase(): Promise<void> {
           await db.insert(categories).values(names.map((name) => ({ name })));
           console.log("[puttclub] base categories seeded");
         }
-        // کاربر مدیر اگر نباشد
+        // کاربر مدیر اگر نباشد — و مهاجرت رمز قدیمی به رمز جدید
         const [admin] = await db
           .select()
           .from(users)
@@ -112,11 +112,17 @@ export function bootstrapDatabase(): Promise<void> {
           await db.insert(users).values({
             name: "مدیر فروشگاه",
             email: "admin@puttclub.ir",
-            password: sha("admin1234"),
+            password: sha("Golf1405"),
             phone: "09123456780",
             role: "admin",
           });
           console.log("[puttclub] admin user seeded");
+        } else if (admin.password === sha("admin1234")) {
+          await db
+            .update(users)
+            .set({ password: sha("Golf1405"), role: "admin" })
+            .where(eq(users.email, "admin@puttclub.ir"));
+          console.log("[puttclub] admin password migrated");
         }
       } catch (e) {
         console.error("[puttclub] bootstrap failed:", e);

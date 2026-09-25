@@ -12,7 +12,8 @@ const KEY = "puttclub_admin";
 
 export const DEMO_ADMIN = {
   email: "admin@puttclub.ir",
-  password: "admin1234",
+  username: "admin",
+  password: "Golf1405",
   name: "مدیر فروشگاه",
 };
 

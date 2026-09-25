@@ -4,13 +4,13 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
-import { Flag, Loader2, Lock, Mail, ShieldCheck } from "lucide-react";
+import { Flag, Loader2, Lock, ShieldCheck, User } from "lucide-react";
 import { DEMO_ADMIN, getAdmin, setAdmin } from "@/lib/admin";
 import { withBase } from "@/lib/public";
 
 export default function AdminLoginPage() {
   const router = useRouter();
-  const [email, setEmail] = useState("");
+  const [identifier, setIdentifier] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
@@ -29,22 +29,23 @@ export default function AdminLoginPage() {
         res = await fetch(withBase("/api/admin/login"), {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ email, password }),
+          body: JSON.stringify({ email: identifier, password }),
         });
       } catch {
         res = null;
       }
       // هاست استاتیک — ورود نمایشی محلی
       if (!res || res.status === 404 || res.status === 405) {
+        const id = identifier.toLowerCase().trim();
         if (
-          email.toLowerCase().trim() === DEMO_ADMIN.email &&
+          (id === DEMO_ADMIN.username || id === DEMO_ADMIN.email) &&
           password === DEMO_ADMIN.password
         ) {
           setAdmin({ id: 0, name: DEMO_ADMIN.name, email: DEMO_ADMIN.email });
           router.push("/admin");
           return;
         }
-        setError("ایمیل یا رمز عبور اشتباه است.");
+        setError("نام کاربری یا رمز عبور اشتباه است.");
         return;
       }
       const data = await res.json();
@@ -84,14 +85,15 @@ export default function AdminLoginPage() {
 
         <form onSubmit={submit} className="mt-8 space-y-4">
           <div className="relative">
-            <Mail size={16} className="absolute start-4 top-1/2 -translate-y-1/2 text-sage" />
+            <User size={16} className="absolute start-4 top-1/2 -translate-y-1/2 text-sage" />
             <input
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              placeholder="ایمیل مدیر"
+              type="text"
+              value={identifier}
+              onChange={(e) => setIdentifier(e.target.value)}
+              placeholder="نام کاربری"
               dir="ltr"
               required
+              autoComplete="username"
               className={`${inputCls} text-right`}
             />
           </div>
@@ -104,6 +106,7 @@ export default function AdminLoginPage() {
               placeholder="رمز عبور"
               dir="ltr"
               required
+              autoComplete="current-password"
               className={`${inputCls} text-right`}
             />
           </div>
@@ -117,11 +120,6 @@ export default function AdminLoginPage() {
             ورود به داشبورد
           </button>
         </form>
-
-        <div className="mt-6 rounded-2xl border border-dashed border-gold-500/30 bg-forest-950/50 p-4 text-xs leading-6 text-sage">
-          <span className="font-bold text-gold-300">حساب مدیر نمونه:</span>
-          <span dir="ltr" className="block">admin@puttclub.ir / admin1234</span>
-        </div>
 
         <p className="mt-6 text-center text-xs text-sage">
           <Link href="/" className="inline-flex items-center gap-1.5 transition-colors hover:text-gold-300">
