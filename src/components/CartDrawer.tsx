@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { AnimatePresence, motion } from "framer-motion";
 import { ArrowLeft, Minus, Plus, ShoppingBag, Trash2, Truck, X } from "lucide-react";
 import { useCartStore } from "@/lib/store";
@@ -18,7 +18,14 @@ export default function CartDrawer() {
   const [mounted, setMounted] = useState(false);
   const [showGate, setShowGate] = useState(false);
   const router = useRouter();
+  const pathname = usePathname();
   const { gate, gateLoaded, locked } = useShopGate("checkout", showGate);
+
+  // با عوض شدن صفحه (مثلاً زدن «برگشت به سایت»)، قفل سبد حتماً پاک شود
+  // تا پاپ‌آپ روی صفحه جدید گیر نکند — چون سبد سراسری است.
+  useEffect(() => {
+    setShowGate(false);
+  }, [pathname]);
 
   useEffect(() => {
     setMounted(true);
@@ -68,7 +75,7 @@ export default function CartDrawer() {
   return (
     <>
       <AnimatePresence>
-        {showGate && locked && <GateModal gate={gate} />}
+        {showGate && locked && <GateModal gate={gate} onBack={() => setShowGate(false)} />}
       </AnimatePresence>
       <AnimatePresence>
       {isOpen && (

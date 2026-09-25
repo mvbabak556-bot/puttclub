@@ -8,8 +8,16 @@ import type { PublicGate } from "@/components/shop/useShopGate";
 /**
  * ظاهر یکسان پاپ‌آپ قفل فروشگاه — هم برای باز شدن فروشگاه،
  * هم برای تکمیل خرید. فقط دکمه برگشت دارد و دکمه بستن ندارد.
+ * پس‌زمینه: مات + بلور است تا صفحه پشت (فروشگاه/تسویه) دیده شود،
+ * ولی مثل حالت کم‌نور، تیره و تار به نظر برسد.
  */
-export default function GateModal({ gate }: { gate: PublicGate }) {
+export default function GateModal({
+  gate,
+  onBack,
+}: {
+  gate: PublicGate;
+  onBack?: () => void;
+}) {
   return (
     <motion.div
       initial={{ opacity: 0 }}
@@ -19,13 +27,23 @@ export default function GateModal({ gate }: { gate: PublicGate }) {
       role="dialog"
       aria-modal="true"
       aria-label={gate.title}
-      className="fixed inset-0 z-[90] flex items-center justify-center bg-forest-950/95 p-4 backdrop-blur-md"
+      className="fixed inset-0 z-[90] flex items-center justify-center overflow-y-auto p-4"
     >
+      {/* لایه مات + بلور: صفحه پشت دیده می‌شود ولی تار و کم‌نور است */}
+      <div
+        aria-hidden
+        className="absolute inset-0 bg-forest-950/60 backdrop-blur-xl backdrop-brightness-50 backdrop-saturate-50"
+      />
+      {/* وینیت ملایم برای حس تیرگی بیشتر در لبه‌ها */}
+      <div
+        aria-hidden
+        className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_center,transparent_0%,rgba(5,13,9,0.5)_100%)]"
+      />
       <motion.div
         initial={{ opacity: 0, y: 32, scale: 0.97 }}
         animate={{ opacity: 1, y: 0, scale: 1 }}
         transition={{ duration: 0.55, ease: [0.22, 1, 0.36, 1] }}
-        className="w-full max-w-md rounded-[2rem] border border-gold-500/25 bg-forest-900 p-8 text-center shadow-2xl sm:p-10"
+        className="relative w-full max-w-md rounded-[2rem] border border-gold-500/25 bg-forest-900/90 p-8 text-center shadow-2xl backdrop-blur-xl sm:p-10"
       >
         <span className="mx-auto grid size-16 place-items-center rounded-2xl bg-gold-500 text-forest-950 shadow-[0_16px_40px_-12px_rgba(201,162,75,0.6)]">
           <Store size={30} strokeWidth={1.8} />
@@ -34,6 +52,7 @@ export default function GateModal({ gate }: { gate: PublicGate }) {
         <p className="mt-4 text-sm leading-8 text-cream/75">{gate.message}</p>
         <Link
           href="/"
+          onClick={onBack}
           className="group mt-8 inline-flex w-full items-center justify-center gap-2 rounded-full bg-gold-500 py-3.5 text-sm font-black text-forest-950 transition-colors hover:bg-gold-400"
         >
           <ArrowRight size={17} className="transition-transform group-hover:translate-x-1" />
