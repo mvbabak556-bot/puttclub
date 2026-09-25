@@ -1,13 +1,11 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
-import Image from "next/image";
 import Link from "next/link";
 import { AnimatePresence, motion } from "framer-motion";
 import {
   ArrowLeft,
   Camera,
-  Check,
   ChevronDown,
   Crown,
   Flag,
@@ -79,10 +77,6 @@ const BODY_SIZE: Record<TextSize, string> = {
   lg: "text-base leading-9",
   xl: "text-lg leading-10",
 };
-
-function imgSrc(u: string) {
-  return u.startsWith("http") ? u : withBase(u);
-}
 
 /* محتوای پیش‌فرض غنی — تا وقتی دیتای پنل لود نشده، کارت‌ها کامل و خوشگل‌اند */
 const FALLBACK: SiteCourse[] = [
@@ -394,12 +388,11 @@ export default function Programs() {
           </Reveal>
         </div>
 
-        {/* ۶ کارت دوره — با کلیک روی هرکدام، کادر جزئیات زیر گرید باز می‌شود */}
+        {/* ۶ کارت دوره — مثل قبل؛ با کلیک، کادر جزئیات زیر گرید باز می‌شود */}
         <div className="mt-12 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
           {courses.map((c, i) => {
             const Icon = ICONS[c.icon] ?? Sparkles;
             const active = openId === c.id;
-            const cover = c.images[0];
             return (
               <motion.button
                 key={c.id}
@@ -411,73 +404,35 @@ export default function Programs() {
                 onClick={() => toggle(c.id)}
                 aria-expanded={active}
                 aria-controls="course-detail"
-                className={`group relative block h-full w-full cursor-pointer overflow-hidden rounded-3xl border text-start transition-all duration-500 hover:-translate-y-1 ${
+                className={`group relative block h-full w-full cursor-pointer rounded-3xl border p-7 text-start transition-all duration-500 hover:-translate-y-1 ${
                   active
-                    ? "border-gold-400/70 bg-forest-800 shadow-[0_24px_60px_-20px_rgba(201,162,75,0.45)]"
-                    : "border-gold-500/10 bg-forest-900 hover:border-gold-500/35 hover:shadow-[0_20px_50px_-24px_rgba(201,162,75,0.35)]"
+                    ? "border-gold-400/60 bg-forest-800 shadow-[0_20px_50px_-20px_rgba(201,162,75,0.4)]"
+                    : "border-gold-500/10 bg-forest-900 hover:border-gold-500/30"
                 }`}
               >
-                {/* عکس کاور کارت */}
-                <span className="relative block aspect-[16/9] overflow-hidden">
-                  {cover ? (
-                    <Image
-                      src={imgSrc(cover)}
-                      alt={c.title}
-                      fill
-                      sizes="(max-width:640px) 90vw, (max-width:1024px) 45vw, 380px"
-                      className="object-cover transition-transform duration-700 group-hover:scale-105"
-                    />
-                  ) : (
-                    <span className="absolute inset-0 bg-gradient-to-br from-forest-700 via-forest-800 to-forest-950" />
-                  )}
-                  <span className="absolute inset-0 bg-gradient-to-t from-forest-950/85 via-forest-950/20 to-transparent" />
-                  {/* آیکون شناور */}
-                  <span
-                    className={`absolute bottom-3 start-4 grid size-11 place-items-center rounded-xl border shadow-lg backdrop-blur transition-all duration-500 ${
-                      active
-                        ? "border-gold-400 bg-gold-500 text-forest-950"
-                        : "border-gold-500/40 bg-forest-950/80 text-gold-400 group-hover:bg-gold-500 group-hover:text-forest-950"
-                    }`}
-                  >
-                    <Icon size={20} strokeWidth={1.8} />
-                  </span>
-                  {c.images.length > 1 && (
-                    <span className="absolute end-3 top-3 rounded-full bg-forest-950/75 px-2.5 py-1 text-[10px] font-bold text-gold-300 backdrop-blur">
-                      {c.images.length} عکس
-                    </span>
-                  )}
-                  {active && (
-                    <span className="absolute end-3 bottom-3 inline-flex items-center gap-1 rounded-full bg-gold-500 px-2.5 py-1 text-[10px] font-black text-forest-950">
-                      <Check size={12} strokeWidth={3} />
-                      باز است
-                    </span>
-                  )}
+                <span
+                  className={`grid size-13 place-items-center rounded-2xl border transition-all duration-500 ${
+                    active
+                      ? "border-gold-400 bg-gold-500 text-forest-950"
+                      : "border-gold-500/25 bg-forest-800 text-gold-400 group-hover:bg-gold-500 group-hover:text-forest-950"
+                  }`}
+                >
+                  <Icon size={22} strokeWidth={1.7} />
                 </span>
-
-                <span className="block p-6 pt-5">
-                  <span
-                    className="block text-lg font-black leading-snug"
-                    style={c.titleColor ? { color: c.titleColor } : undefined}
-                  >
-                    {c.title}
-                  </span>
-                  {c.subtitle && (
-                    <span className="mt-1 block text-xs font-bold text-gold-400">{c.subtitle}</span>
-                  )}
-                  <span className="mt-2.5 block text-sm leading-7 text-sage">{c.shortDesc}</span>
-                  <span
-                    className={`mt-4 inline-flex items-center gap-1.5 rounded-full border px-3.5 py-1.5 text-xs font-bold transition-all ${
-                      active
-                        ? "border-gold-400/60 bg-gold-500/15 text-gold-200"
-                        : "border-gold-500/20 text-sage group-hover:border-gold-500/40 group-hover:text-gold-300"
-                    }`}
-                  >
-                    {active ? "بستن جزئیات" : "دیدن جزئیات و عکس‌ها"}
-                    <ChevronDown
-                      size={14}
-                      className={`transition-transform duration-300 ${active ? "rotate-180" : ""}`}
-                    />
-                  </span>
+                <span className="mt-5 block text-lg font-black" style={c.titleColor ? { color: c.titleColor } : undefined}>
+                  {c.title}
+                </span>
+                {c.subtitle && (
+                  <span className="mt-1 block text-xs font-bold text-gold-400">{c.subtitle}</span>
+                )}
+                <span className="mt-2 block text-sm leading-7 text-sage">{c.shortDesc}</span>
+                <span
+                  className={`mt-4 inline-flex items-center gap-1.5 text-xs font-bold transition-colors ${
+                    active ? "text-gold-300" : "text-sage group-hover:text-gold-300"
+                  }`}
+                >
+                  {active ? "بستن جزئیات" : "دیدن جزئیات و عکس‌ها"}
+                  <ChevronDown size={14} className={`transition-transform duration-300 ${active ? "rotate-180" : ""}`} />
                 </span>
               </motion.button>
             );
