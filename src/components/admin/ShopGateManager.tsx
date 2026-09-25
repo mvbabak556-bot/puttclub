@@ -11,6 +11,8 @@ const inputCls =
 
 interface GateForm {
   enabled: boolean;
+  showOnShop: boolean;
+  showOnCheckout: boolean;
   title: string;
   message: string;
   backLabel: string;
@@ -22,6 +24,9 @@ function toForm(v: unknown): GateForm {
   const o = (v && typeof v === "object" ? v : {}) as Record<string, unknown>;
   return {
     enabled: typeof o.enabled === "boolean" ? o.enabled : d.enabled,
+    showOnShop: typeof o.showOnShop === "boolean" ? o.showOnShop : d.showOnShop,
+    showOnCheckout:
+      typeof o.showOnCheckout === "boolean" ? o.showOnCheckout : d.showOnCheckout,
     title: typeof o.title === "string" && o.title ? o.title : d.title,
     message: typeof o.message === "string" && o.message ? o.message : d.message,
     backLabel: typeof o.backLabel === "string" && o.backLabel ? o.backLabel : d.backLabel,
@@ -81,6 +86,8 @@ export default function ShopGateManager() {
     setSaving(true);
     const value = {
       enabled: form.enabled,
+      showOnShop: form.showOnShop,
+      showOnCheckout: form.showOnCheckout,
       title: form.title.trim(),
       message: form.message.trim(),
       backLabel: form.backLabel.trim(),
@@ -129,8 +136,9 @@ export default function ShopGateManager() {
         <div>
           <h1 className="text-2xl font-black">پاپ‌آپ فروشگاه</h1>
           <p className="mt-1.5 max-w-xl text-xs leading-6 text-sage">
-            وقتی روشن باشد، با باز شدن فروشگاه پاپ‌آپ «به‌زودی» نمایش داده می‌شود؛
-            فقط دکمه برگشت به سایت دارد و ورود فقط با رمز مخفی صفحه‌کلید ممکن است.
+            وقتی روشن باشد، همان پاپ‌آپ «به‌زودی» هم با باز شدن فروشگاه و هم با
+            زدن «تکمیل خرید» نمایش داده می‌شود؛ فقط دکمه برگشت به سایت دارد و
+            ورود فقط با رمز مخفی صفحه‌کلید ممکن است.
           </p>
         </div>
         {demo && (
@@ -178,6 +186,42 @@ export default function ShopGateManager() {
           />
         </span>
       </button>
+
+      {/* محل نمایش */}
+      <div className="mt-4 grid gap-3 sm:max-w-md">
+        {(
+          [
+            { key: "showOnShop", label: "نمایش با باز شدن فروشگاه", hint: "پاپ‌آپ روی صفحه /shop" },
+            { key: "showOnCheckout", label: "نمایش با تکمیل خرید", hint: "پاپ‌آپ روی دکمه تکمیل خرید و صفحه تسویه" },
+          ] as const
+        ).map((row) => (
+          <button
+            key={row.key}
+            onClick={() => setForm({ ...form, [row.key]: !form[row.key] })}
+            className={`flex w-full items-center justify-between rounded-2xl border px-4 py-3.5 transition-all ${
+              form[row.key]
+                ? "border-gold-500/40 bg-gold-500/10"
+                : "border-gold-500/10 bg-forest-900/70 opacity-70"
+            }`}
+          >
+            <span className="text-start">
+              <span className="block text-sm font-bold">{row.label}</span>
+              <span className="mt-0.5 block text-[11px] text-sage">{row.hint}</span>
+            </span>
+            <span
+              className={`relative h-6 w-11 shrink-0 rounded-full transition-colors ${
+                form[row.key] ? "bg-gold-500" : "bg-forest-700"
+              }`}
+            >
+              <span
+                className={`absolute top-1 size-4 rounded-full bg-forest-950 transition-all ${
+                  form[row.key] ? "start-6" : "start-1"
+                }`}
+              />
+            </span>
+          </button>
+        ))}
+      </div>
 
       {/* متن‌ها */}
       <div className="mt-6 grid gap-4 rounded-3xl border border-gold-500/10 bg-forest-900/70 p-6 sm:grid-cols-2">

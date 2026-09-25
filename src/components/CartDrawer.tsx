@@ -3,16 +3,22 @@
 import { useEffect, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { AnimatePresence, motion } from "framer-motion";
 import { ArrowLeft, Minus, Plus, ShoppingBag, Trash2, Truck, X } from "lucide-react";
 import { useCartStore } from "@/lib/store";
 import { faNum, faPrice } from "@/lib/format";
 import { FREE_SHIPPING_THRESHOLD } from "@/lib/data";
 import { withBase } from "@/lib/public";
+import GateModal from "@/components/shop/GateModal";
+import { useShopGate } from "@/components/shop/useShopGate";
 
 export default function CartDrawer() {
   const { items, isOpen, close, remove, setQty } = useCartStore();
   const [mounted, setMounted] = useState(false);
+  const [showGate, setShowGate] = useState(false);
+  const router = useRouter();
+  const { gate, gateLoaded, locked } = useShopGate("checkout", showGate);
 
   useEffect(() => {
     setMounted(true);
@@ -25,6 +31,34 @@ export default function CartDrawer() {
     };
   }, [isOpen]);
 
+  // قفل اسکرول پشت پاپ‌آپ قفل خرید
+  useEffect(() => {
+    if (!showGate || !locked) return;
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.body.style.overflow = "";
+    };
+  }, [showGate, locked]);
+
+  // بعد از باز شدن قفل با رمز مخفی، ادامه به صفحه تسویه
+  useEffect(() => {
+    if (showGate && gateLoaded && !locked) {
+      setShowGate(false);
+      router.push("/checkout");
+    }
+  }, [showGate, gateLoaded, locked, router]);
+
+  // اگر قفل تکمیل خرید فعال باشد، به‌جای رفتن به تسویه، همان پاپ‌آپ می‌آید
+  const handleCheckout = (e: React.MouseEvent) => {
+    if (gateLoaded && locked) {
+      e.preventDefault();
+      close();
+      setShowGate(true);
+    } else {
+      close();
+    }
+  };
+
   if (!mounted) return null;
 
   const subtotal = items.reduce((s, i) => s + i.price * i.qty, 0);
@@ -32,7 +66,11 @@ export default function CartDrawer() {
   const remaining = FREE_SHIPPING_THRESHOLD - subtotal;
 
   return (
-    <AnimatePresence>
+    <>
+      <AnimatePresence>
+        {showGate && locked && <GateModal gate={gate} />}
+      </AnimatePresence>
+      <AnimatePresence>
       {isOpen && (
         <div className="fixed inset-0 z-[80]">
           <motion.div
@@ -201,7 +239,7 @@ export default function CartDrawer() {
                 </div>
                 <Link
                   href="/checkout"
-                  onClick={close}
+                  onClick={handleCheckout}
                   className="group mt-4 flex w-full items-center justify-center gap-2 rounded-full bg-gold-500 py-3.5 text-sm font-black text-forest-950 transition-all hover:bg-gold-400"
                 >
                   تکمیل خرید
@@ -212,6 +250,7 @@ export default function CartDrawer() {
           </motion.aside>
         </div>
       )}
-    </AnimatePresence>
+      </AnimatePresence>
+    </>
   );
 }

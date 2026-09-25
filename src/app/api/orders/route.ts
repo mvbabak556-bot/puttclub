@@ -1,9 +1,10 @@
 import { NextResponse } from "next/server";
 import { desc, eq, inArray } from "drizzle-orm";
 import { db } from "@/db";
-import { orders, products, type OrderItem } from "@/db/schema";
+import { orders, products, siteSettings, type OrderItem } from "@/db/schema";
 import { bootstrapDatabase } from "@/db/bootstrap";
 import { FREE_SHIPPING_THRESHOLD, SHIPPING_COST } from "@/lib/data";
+import { DEFAULT_SITE_SETTINGS } from "@/lib/site-defaults";
 
 export const dynamic = "force-dynamic";
 
@@ -27,6 +28,41 @@ export async function POST(req: Request) {
   try {
     await bootstrapDatabase();
     const body = await req.json();
+
+    // قفل تکمیل خرید: اگر در پنل فعال باشد، ثبت سفارش فقط با رمز مخفی ممکن است
+    try {
+      const d = DEFAULT_SITE_SETTINGS.shopGate;
+      let gate: Record<string, unknown> = { ...d };
+      const [row] = await db
+        .select()
+        .from(siteSettings)
+        .where(eq(siteSettings.key, "shopGate"));
+      if (row?.value && typeof row.value === "object") {
+        gate = { ...d, ...(row.value as object) };
+      }
+      const checkoutLocked =
+        gate.enabled === true && (gate.showOnCheckout ?? true) === true;
+      if (checkoutLocked) {
+        const code =
+          typeof gate.code === "string" && gate.code.trim() ? gate.code.trim() : d.code;
+        const attempt = String(body.shopUnlock ?? "").trim().toLowerCase();
+        if (!attempt.endsWith(code.toLowerCase())) {
+          return NextResponse.json(
+            {
+              error:
+                typeof gate.message === "string" && gate.message
+                  ? gate.message
+                  : "ثبت سفارش فعلاً بسته است.",
+              gateLocked: true,
+            },
+            { status: 403 }
+          );
+        }
+      }
+    } catch {
+      /* اگر خواندن تنظیمات شکست خورد، ادامه بده (رفتار قبلی) */
+    }
+
     const customer = body.customer ?? {};
     const items: { productId: number; qty: number }[] = body.items ?? [];
 

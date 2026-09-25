@@ -110,6 +110,8 @@ export interface SiteSettings {
   footer: { aboutText: string };
   shopGate: {
     enabled: boolean;
+    showOnShop: boolean;
+    showOnCheckout: boolean;
     title: string;
     message: string;
     backLabel: string;
@@ -197,6 +199,8 @@ export const DEFAULT_SITE_SETTINGS: SiteSettings = {
   },
   shopGate: {
     enabled: true,
+    showOnShop: true,
+    showOnCheckout: true,
     title: "فروشگاه به‌زودی باز می‌شود",
     message:
       "فروشگاه پات‌کلاب در حال آماده‌سازی نهایی است و فعلاً فقط به‌صورت آزمایشی باز است؛ سفارش‌ها در این مرحله نهایی نمی‌شوند. از شکیبایی شما سپاسگزاریم — به‌زودی با فروشگاه کامل در خدمتیم.",

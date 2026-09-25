@@ -6,12 +6,11 @@ import GateModal from "@/components/shop/GateModal";
 import { useShopGate } from "@/components/shop/useShopGate";
 
 /**
- * دروازه فروشگاه: اگر در پنل فروشگاه فعال باشد، با باز شدن فروشگاه
- * پاپ‌آپ «به‌زودی» نمایش داده می‌شود؛ فقط دکمه برگشت به سایت دارد و
- * دکمه بستن ندارد. ورود مخفی فقط با تایپ رمز انگلیسی انجام می‌شود.
+ * همان قفل و پیام فروشگاه، برای مرحله تکمیل خرید.
+ * اگر در پنل فعال باشد، تا رمز مخفی تایپ نشود، فرم تسویه باز نمی‌شود.
  */
-export default function ShopGate() {
-  const { gate, locked } = useShopGate("shop", true);
+export default function CheckoutGate() {
+  const { gate, locked } = useShopGate("checkout", true);
 
   // قفل اسکرول صفحه پشت پاپ‌آپ
   useEffect(() => {

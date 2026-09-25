@@ -22,6 +22,8 @@ import { useCartStore } from "@/lib/store";
 import { faNum, faPrice } from "@/lib/format";
 import { FREE_SHIPPING_THRESHOLD, SHIPPING_COST } from "@/lib/data";
 import { saveLocalOrder, withBase } from "@/lib/public";
+import CheckoutGate from "@/components/shop/CheckoutGate";
+import { getUnlockCode } from "@/components/shop/useShopGate";
 
 const CITIES = [
   "تهران",
@@ -115,7 +117,7 @@ export default function CheckoutPage() {
         phone: toEn(form.phone.trim()),
         postalCode: toEn(form.postalCode.trim()),
       };
-      const payload = { customer, items };
+      const payload = { customer, items, shopUnlock: getUnlockCode() };
       let res: Response | null = null;
       try {
         res = await fetch(withBase("/api/orders"), {
@@ -129,6 +131,16 @@ export default function CheckoutPage() {
       if (res && res.ok) {
         const data = await res.json();
         setOrderCode(data.code);
+      } else if (res && res.status === 403) {
+        // قفل تکمیل خرید فعال است — نشست بازکردن را پاک کن تا همان پاپ‌آپ برگردد
+        try {
+          sessionStorage.removeItem("puttclub_shop_unlocked");
+          sessionStorage.removeItem("puttclub_shop_unlock_code");
+        } catch {
+          /* noop */
+        }
+        window.location.reload();
+        return;
       } else if (res && res.status >= 400 && res.status < 500 && res.status !== 404 && res.status !== 405) {
         // خطای واقعی اعتبارسنجی از سمت سرور
         let msg = "ثبت سفارش با خطا مواجه شد. لطفاً دوباره تلاش کنید.";
@@ -250,6 +262,7 @@ export default function CheckoutPage() {
 
   return (
     <div className="mx-auto max-w-7xl px-4 pb-28 pt-28 sm:px-6 sm:pt-36 lg:px-8">
+      <CheckoutGate />
       <h1 className="text-3xl font-black sm:text-4xl">
         تکمیل <span className="text-gold-grad">خرید</span>
       </h1>
