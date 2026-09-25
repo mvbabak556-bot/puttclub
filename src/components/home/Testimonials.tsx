@@ -1,8 +1,8 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { motion } from "framer-motion";
-import { CheckCircle2, ChevronDown, Loader2, PenLine, Send, Star } from "lucide-react";
+import { AnimatePresence, motion } from "framer-motion";
+import { CheckCircle2, ChevronDown, Loader2, PenLine, Send, Star, X } from "lucide-react";
 import Stars from "@/components/Stars";
 import { Reveal } from "@/components/Motion";
 import { useSiteSettings } from "@/components/SiteProvider";
@@ -28,6 +28,7 @@ export default function Testimonials() {
   const settings = useSiteSettings();
   const [list, setList] = useState<SiteTestimonial[]>(FALLBACK);
   const [visible, setVisible] = useState(INITIAL);
+  const [open, setOpen] = useState(false);
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
   const [text, setText] = useState("");
@@ -69,6 +70,26 @@ export default function Testimonials() {
     };
   }, []);
 
+  // قفل اسکرول بدنه + بستن با Escape وقتی پاپ‌آپ باز است
+  useEffect(() => {
+    if (!open) return;
+    document.body.style.overflow = "hidden";
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setOpen(false);
+    };
+    window.addEventListener("keydown", onKey);
+    return () => {
+      document.body.style.overflow = "";
+      window.removeEventListener("keydown", onKey);
+    };
+  }, [open ]);
+
+  const close = () => {
+    setOpen(false);
+    setError("");
+    setDone(false);
+  };
+
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
@@ -107,7 +128,11 @@ export default function Testimonials() {
       setPhone("");
       setText("");
       setStars(5);
-      setTimeout(() => setDone(false), 5000);
+      // نمایش پیام موفقیت و بستن خودکار پاپ‌آپ
+      setTimeout(() => {
+        setDone(false);
+        setOpen(false);
+      }, 2200);
     } finally {
       setLoading(false);
     }
@@ -158,8 +183,8 @@ export default function Testimonials() {
           ))}
         </div>
 
-        {visible < list.length && (
-          <div className="mt-8 text-center">
+        <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
+          {visible < list.length && (
             <button
               onClick={() => setVisible((v) => v + PAGE)}
               className="inline-flex items-center gap-2 rounded-full border border-gold-500/30 px-7 py-3 text-sm font-bold text-gold-300 transition-all hover:border-gold-400 hover:bg-gold-500/10"
@@ -167,47 +192,94 @@ export default function Testimonials() {
               نمایش بیشتر ({faNum(Math.min(PAGE, list.length - visible))} نظر دیگر)
               <ChevronDown size={16} />
             </button>
-          </div>
-        )}
+          )}
+          <button
+            onClick={() => setOpen(true)}
+            className="group inline-flex items-center gap-2 rounded-full bg-gold-500 px-7 py-3 text-sm font-black text-forest-950 shadow-[0_14px_36px_-12px_rgba(201,162,75,0.55)] transition-all hover:bg-gold-400"
+          >
+            <PenLine size={16} className="transition-transform group-hover:-rotate-12" />
+            ثبت نظر شما
+          </button>
+        </div>
 
-        {/* فرم ثبت نظر — بدون نیاز به ثبت‌نام */}
-        <Reveal className="mx-auto mt-12 max-w-2xl">
-          <form onSubmit={submit} className="rounded-[2rem] border border-gold-500/15 bg-forest-900/70 p-7 sm:p-9">
-            <h3 className="flex items-center gap-2.5 text-lg font-black">
-              <PenLine size={19} className="text-gold-400" />
-              نظر شما
-            </h3>
-            <p className="mt-2 text-xs leading-6 text-sage">
-              نام و شماره تماس الزامی است (شماره تماس نمایش داده نمی‌شود). نظر شما پس از تأیید مدیر منتشر می‌شود.
-            </p>
-            <div className="mt-6">
-              <label className="mb-2 block text-xs font-bold text-sage">امتیاز شما</label>
-              <div className="flex items-center gap-1" dir="ltr">
-                {[1, 2, 3, 4, 5].map((s) => (
-                  <button key={s} type="button" onClick={() => setStars(s)} aria-label={`${s} ستاره`} className="transition-transform hover:scale-110">
-                    <Star size={26} className={s <= stars ? "fill-gold-400 text-gold-400" : "fill-transparent text-forest-600"} />
+        {/* پاپ‌آپ ثبت نظر — بدون نیاز به ثبت‌نام */}
+        <AnimatePresence>
+          {open && (
+            <div className="fixed inset-0 z-[90] flex items-end justify-center sm:items-center sm:p-6">
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                onClick={close}
+                className="absolute inset-0 bg-forest-950/75 backdrop-blur-sm"
+              />
+              <motion.div
+                initial={{ opacity: 0, y: 44, scale: 0.98 }}
+                animate={{ opacity: 1, y: 0, scale: 1 }}
+                exit={{ opacity: 0, y: 32, scale: 0.98 }}
+                transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1] }}
+                className="relative max-h-[92vh] w-full max-w-xl overflow-y-auto rounded-t-[2rem] border border-gold-500/20 bg-forest-900 p-7 sm:rounded-[2rem] sm:p-9"
+              >
+                <div className="flex items-start justify-between gap-4">
+                  <div>
+                    <h3 className="flex items-center gap-2.5 text-lg font-black">
+                      <PenLine size={19} className="text-gold-400" />
+                      ثبت نظر شما
+                    </h3>
+                    <p className="mt-2 text-xs leading-6 text-sage">
+                      نام و شماره تماس الزامی است (شماره تماس نمایش داده نمی‌شود). نظر شما پس از تأیید مدیر منتشر می‌شود.
+                    </p>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={close}
+                    aria-label="بستن"
+                    className="grid size-9 shrink-0 place-items-center rounded-full border border-forest-600 text-sage transition-colors hover:border-gold-500/50 hover:text-gold-300"
+                  >
+                    <X size={16} />
                   </button>
-                ))}
-              </div>
+                </div>
+
+                {done ? (
+                  <motion.div
+                    initial={{ opacity: 0, scale: 0.94 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    className="mt-8 flex flex-col items-center gap-3 rounded-3xl border border-gold-500/25 bg-forest-950/60 px-6 py-10 text-center"
+                  >
+                    <span className="grid size-14 place-items-center rounded-full bg-gold-500 text-forest-950">
+                      <CheckCircle2 size={26} />
+                    </span>
+                    <p className="text-sm font-black text-gold-300">نظر شما ثبت شد!</p>
+                    <p className="max-w-xs text-xs leading-6 text-sage">
+                      پس از تأیید مدیر نمایش داده می‌شود. سپاس از همراهی‌تان!
+                    </p>
+                  </motion.div>
+                ) : (
+                  <form onSubmit={submit} className="mt-6">
+                    <label className="mb-2 block text-xs font-bold text-sage">امتیاز شما</label>
+                    <div className="flex items-center gap-1" dir="ltr">
+                      {[1, 2, 3, 4, 5].map((s) => (
+                        <button key={s} type="button" onClick={() => setStars(s)} aria-label={`${s} ستاره`} className="transition-transform hover:scale-110">
+                          <Star size={26} className={s <= stars ? "fill-gold-400 text-gold-400" : "fill-transparent text-forest-600"} />
+                        </button>
+                      ))}
+                    </div>
+                    <div className="mt-4 grid gap-3 sm:grid-cols-2">
+                      <input value={name} onChange={(e) => setName(e.target.value)} placeholder="نام و نام خانوادگی *" className="h-12 w-full rounded-2xl border border-gold-500/15 bg-forest-950/60 px-4 text-sm outline-none placeholder:text-sage/50 focus:border-gold-500/50" />
+                      <input value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="شماره تماس *" dir="ltr" inputMode="tel" className="h-12 w-full rounded-2xl border border-gold-500/15 bg-forest-950/60 px-4 text-right text-sm outline-none placeholder:text-sage/50 focus:border-gold-500/50" />
+                    </div>
+                    <textarea value={text} onChange={(e) => setText(e.target.value)} placeholder="تجربه‌تان از آکادمی یا فروشگاه را بنویسید..." rows={4} className="mt-3 w-full resize-none rounded-2xl border border-gold-500/15 bg-forest-950/60 px-4 py-3.5 text-sm leading-7 outline-none placeholder:text-sage/50 focus:border-gold-500/50" />
+                    {error && <p className="mt-3 text-sm font-bold text-red-400">{error}</p>}
+                    <button type="submit" disabled={loading} className="mt-5 inline-flex w-full items-center justify-center gap-2 rounded-full bg-gold-500 py-3.5 text-sm font-black text-forest-950 transition-colors hover:bg-gold-400 disabled:opacity-60">
+                      {loading ? <Loader2 size={16} className="animate-spin" /> : <Send size={16} />}
+                      ثبت نظر
+                    </button>
+                  </form>
+                )}
+              </motion.div>
             </div>
-            <div className="mt-4 grid gap-3 sm:grid-cols-2">
-              <input value={name} onChange={(e) => setName(e.target.value)} placeholder="نام و نام خانوادگی *" className="h-12 w-full rounded-2xl border border-gold-500/15 bg-forest-950/60 px-4 text-sm outline-none placeholder:text-sage/50 focus:border-gold-500/50" />
-              <input value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="شماره تماس *" dir="ltr" inputMode="tel" className="h-12 w-full rounded-2xl border border-gold-500/15 bg-forest-950/60 px-4 text-right text-sm outline-none placeholder:text-sage/50 focus:border-gold-500/50" />
-            </div>
-            <textarea value={text} onChange={(e) => setText(e.target.value)} placeholder="تجربه‌تان از آکادمی یا فروشگاه را بنویسید..." rows={4} className="mt-3 w-full resize-none rounded-2xl border border-gold-500/15 bg-forest-950/60 px-4 py-3.5 text-sm leading-7 outline-none placeholder:text-sage/50 focus:border-gold-500/50" />
-            {error && <p className="mt-3 text-sm font-bold text-red-400">{error}</p>}
-            {done && (
-              <motion.p initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} className="mt-3 flex items-center gap-1.5 text-xs font-bold text-gold-300">
-                <CheckCircle2 size={14} />
-                نظر شما ثبت شد و پس از تأیید مدیر نمایش داده می‌شود. سپاس!
-              </motion.p>
-            )}
-            <button type="submit" disabled={loading} className="mt-5 inline-flex w-full items-center justify-center gap-2 rounded-full bg-gold-500 py-3.5 text-sm font-black text-forest-950 transition-colors hover:bg-gold-400 disabled:opacity-60">
-              {loading ? <Loader2 size={16} className="animate-spin" /> : <Send size={16} />}
-              ثبت نظر
-            </button>
-          </form>
-        </Reveal>
+          )}
+        </AnimatePresence>
       </div>
     </section>
   );

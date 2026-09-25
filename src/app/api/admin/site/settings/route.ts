@@ -4,6 +4,7 @@ import { db } from "@/db";
 import { siteSettings } from "@/db/schema";
 import { unauthorized, verifyAdmin } from "@/lib/admin-auth";
 import { DEFAULT_SITE_SETTINGS } from "@/lib/site-defaults";
+import { mergeSiteSettings } from "@/lib/site-normalize";
 
 export const dynamic = "force-dynamic";
 
@@ -11,9 +12,9 @@ export async function GET(req: Request) {
   if (!(await verifyAdmin(req))) return unauthorized();
   try {
     const rows = await db.select().from(siteSettings);
-    const merged: Record<string, unknown> = { ...DEFAULT_SITE_SETTINGS };
-    for (const r of rows) merged[r.key] = r.value;
-    return NextResponse.json({ settings: merged });
+    const obj: Record<string, unknown> = {};
+    for (const r of rows) obj[r.key] = r.value;
+    return NextResponse.json({ settings: mergeSiteSettings(obj) });
   } catch {
     return NextResponse.json({ error: "خطای سرور" }, { status: 500 });
   }

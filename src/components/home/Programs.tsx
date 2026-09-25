@@ -32,6 +32,7 @@ import { Reveal } from "@/components/Motion";
 import CourseGallery from "@/components/CourseGallery";
 import { useSiteSettings } from "@/components/SiteProvider";
 import type { CourseSocial, SiteCourse, TextSize } from "@/lib/site-defaults";
+import { camelCourseRow } from "@/lib/site-normalize";
 import { withBase } from "@/lib/public";
 
 const ICONS: Record<string, typeof Flag> = {
@@ -254,6 +255,7 @@ function normalize(rows: unknown): SiteCourse[] {
   if (!Array.isArray(rows)) return [];
   return rows
     .filter((r): r is Record<string, unknown> => !!r && typeof r === "object")
+    .map((r) => camelCourseRow(r))
     .map((r, i) => ({
       id: typeof r.id === "number" ? r.id : 1000 + i,
       title: typeof r.title === "string" && r.title ? r.title : "دوره آموزشی",

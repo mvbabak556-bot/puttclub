@@ -159,9 +159,6 @@ export default function Footer() {
             <Flag size={13} className="text-gold-500" />
             برای گلف‌بازان ایران
           </p>
-          <Link href="/admin/login" className="transition-colors hover:text-gold-300">
-            ورود مدیر فروشگاه
-          </Link>
         </div>
       </div>
     </footer>

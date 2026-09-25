@@ -5,6 +5,7 @@ import { CheckCircle2, Eye, EyeOff, Loader2, Plus, Trash2 } from "lucide-react";
 import { adminFetch, isDemoResponse } from "@/lib/admin";
 import { withBase } from "@/lib/public";
 import { DEFAULT_SITE_SETTINGS, type MenuItem, type SiteSettings } from "@/lib/site-defaults";
+import { mergeSiteSettings } from "@/lib/site-normalize";
 
 const inputCls =
   "h-11 w-full rounded-xl border border-gold-500/15 bg-forest-950/60 px-4 text-sm outline-none placeholder:text-sage/50 focus:border-gold-500/50";
@@ -36,11 +37,11 @@ function useAdminSettings() {
         } catch {
           /* noop */
         }
-        setSettings({ ...DEFAULT_SITE_SETTINGS, ...obj } as SiteSettings);
+        setSettings(mergeSiteSettings(obj));
         return;
       }
       const data = await res!.json();
-      setSettings({ ...DEFAULT_SITE_SETTINGS, ...data.settings });
+      setSettings(mergeSiteSettings(data.settings ?? {}));
     })();
   }, []);
 

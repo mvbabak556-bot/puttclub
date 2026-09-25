@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { Check, ImagePlus, Loader2, Plus, Trash2, X } from "lucide-react";
+import { withBase } from "@/lib/public";
 import {
   CARD_SIZES,
   COURSE_ICONS,
@@ -44,12 +45,12 @@ export interface CoursePayload {
 
 export function courseToPayload(c: SiteCourse): CoursePayload {
   return {
-    title: c.title,
+    title: c.title ?? "",
     subtitle: c.subtitle ?? "",
-    shortDesc: c.shortDesc,
-    fullDesc: c.fullDesc,
-    icon: c.icon,
-    images: [...c.images],
+    shortDesc: c.shortDesc ?? "",
+    fullDesc: c.fullDesc ?? "",
+    icon: c.icon ?? "Sparkles",
+    images: [...(c.images ?? [])],
     galleryMode: c.galleryMode,
     layout: c.layout,
     cardSize: c.cardSize,
@@ -59,10 +60,10 @@ export function courseToPayload(c: SiteCourse): CoursePayload {
     titleSize: c.titleSize,
     bodySize: c.bodySize,
     bodyAlign: c.bodyAlign,
-    footerItems: c.footerItems.map((f) => ({ ...f })),
-    socials: c.socials.map((s) => ({ ...s })),
-    sortOrder: c.sortOrder,
-    isActive: c.isActive,
+    footerItems: (c.footerItems ?? []).map((f) => ({ ...f })),
+    socials: (c.socials ?? []).map((s) => ({ ...s })),
+    sortOrder: c.sortOrder ?? 0,
+    isActive: c.isActive !== false,
   };
 }
 
@@ -248,7 +249,7 @@ export default function SiteCourseForm({
                     className={`relative overflow-hidden rounded-xl border-2 transition-all ${on ? "border-gold-400" : "border-transparent opacity-70 hover:opacity-100"}`}
                   >
                     {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img src={s.url} alt={s.label} className="aspect-[4/3] w-full object-cover" loading="lazy" />
+                    <img src={s.url.startsWith("http") ? s.url : withBase(s.url)} alt={s.label} className="aspect-[4/3] w-full object-cover" loading="lazy" />
                     <span className="absolute inset-x-0 bottom-0 bg-forest-950/75 px-2 py-1 text-center text-[10px] font-bold">
                       {s.label}
                     </span>

@@ -14,6 +14,7 @@ import {
 } from "lucide-react";
 import { adminFetch, demoTable, isDemoResponse, saveDemoTable } from "@/lib/admin";
 import type { SiteCourse } from "@/lib/site-defaults";
+import { normalizeSiteCourses } from "@/lib/site-normalize";
 import { faNum } from "@/lib/format";
 import SiteCourseForm, { EMPTY_COURSE, courseToPayload, type CoursePayload } from "@/components/admin/SiteCourseForm";
 
@@ -33,18 +34,18 @@ export default function SiteCourses() {
       try {
         const localPending = localStorage.getItem("puttclub_demo_site-courses");
         if (localPending) {
-          setCourses(JSON.parse(localPending));
+          setCourses(normalizeSiteCourses(JSON.parse(localPending)));
           return;
         }
       } catch {
         /* noop */
       }
-      const rows = await demoTable<SiteCourse>("site-courses");
-      setCourses(rows.sort((a, b) => a.sortOrder - b.sortOrder));
+      const rows = await demoTable<unknown>("site-courses");
+      setCourses(normalizeSiteCourses(rows).sort((a, b) => a.sortOrder - b.sortOrder));
       return;
     }
     const data = await res!.json();
-    setCourses(data.courses ?? []);
+    setCourses(normalizeSiteCourses(data.courses ?? []));
   };
 
   useEffect(() => {
@@ -212,11 +213,11 @@ export default function SiteCourses() {
             <div className="min-w-0 flex-1">
               <div className="truncate text-sm font-black">{c.title}</div>
               <div className="mt-1 flex flex-wrap items-center gap-2 text-[11px] text-sage">
-                <span>{c.images.length} عکس</span>
+                <span>{(c.images ?? []).length} عکس</span>
                 <span>•</span>
                 <span>{c.galleryMode === "featured" ? "ویترینی" : c.galleryMode === "slider" ? "اسلایدر" : "شبکه‌ای"}</span>
                 <span>•</span>
-                <span>{c.footerItems.length} آیتم پاورقی</span>
+                <span>{(c.footerItems ?? []).length} آیتم پاورقی</span>
                 {!c.isActive && <span className="text-red-300">• مخفی</span>}
               </div>
             </div>

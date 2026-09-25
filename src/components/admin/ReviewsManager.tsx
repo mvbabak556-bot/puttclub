@@ -26,16 +26,24 @@ export default function ReviewsManager() {
       const res = await adminFetch("/api/admin/reviews");
       if (isDemoResponse(res)) {
         setDemo(true);
-        const [rows, prods] = await Promise.all([
-          demoTable<ReviewRow>("reviews"),
+        const [rawRows, prods] = await Promise.all([
+          demoTable<Record<string, unknown>>("reviews"),
           demoTable<{ id: number; name: string }>("products"),
         ]);
         const map = new Map(prods.map((p) => [p.id, p.name]));
-        setReviews(
-          rows
-            .map((r) => ({ ...r, productName: map.get(r.productId) ?? "—" }))
-            .sort((a, b) => b.id - a.id)
-        );
+        const rows: ReviewRow[] = rawRows.map((raw) => {
+          const pid = Number(raw.productId ?? raw.product_id ?? 0);
+          return {
+            id: Number(raw.id),
+            productId: pid,
+            productName: map.get(pid) ?? "—",
+            author: String(raw.author ?? ""),
+            rating: Number(raw.rating ?? 5),
+            comment: String(raw.comment ?? ""),
+            createdAt: String(raw.createdAt ?? raw.created_at ?? ""),
+          };
+        });
+        setReviews(rows.sort((a, b) => b.id - a.id));
         return;
       }
       const data = await res!.json();

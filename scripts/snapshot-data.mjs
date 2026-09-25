@@ -15,10 +15,17 @@ if (!dbUrl) {
 
 const pool = new pg.Pool({ connectionString: dbUrl });
 try {
-  const products = await pool.query("SELECT * FROM products ORDER BY id");
+  // ستون‌های snake_case دیتابیس به camelCase نگاشت می‌شوند تا با تایپ‌های فرانت یکی باشند
+  const products = await pool.query(
+    'SELECT id, slug, name, category, price, old_price AS "oldPrice", short_desc AS "shortDesc", description, features, images, rating, review_count AS "reviewCount", stock, badge, is_new AS "isNew", is_featured AS "isFeatured", created_at AS "createdAt" FROM products ORDER BY id'
+  );
   const categories = await pool.query("SELECT * FROM categories ORDER BY id");
-  const reviews = await pool.query("SELECT * FROM reviews ORDER BY id");
-  const courses = await pool.query("SELECT * FROM site_courses ORDER BY sort_order, id");
+  const reviews = await pool.query(
+    'SELECT id, product_id AS "productId", author, rating, comment, created_at AS "createdAt" FROM reviews ORDER BY id'
+  );
+  const courses = await pool.query(
+    'SELECT id, title, subtitle, short_desc AS "shortDesc", full_desc AS "fullDesc", icon, images, gallery_mode AS "galleryMode", layout, card_size AS "cardSize", title_color AS "titleColor", text_color AS "textColor", accent_color AS "accentColor", title_size AS "titleSize", body_size AS "bodySize", body_align AS "bodyAlign", footer_items AS "footerItems", socials, sort_order AS "sortOrder", is_active AS "isActive", created_at AS "createdAt" FROM site_courses ORDER BY sort_order, id'
+  );
   const testimonials = await pool.query(
     "SELECT id, name, role, text, rating, status, created_at AS \"createdAt\" FROM site_testimonials ORDER BY id"
   );

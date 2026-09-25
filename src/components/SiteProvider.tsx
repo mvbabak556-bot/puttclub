@@ -2,6 +2,7 @@
 
 import { createContext, useContext, useEffect, useState, type ReactNode } from "react";
 import { DEFAULT_SITE_SETTINGS, type SiteSettings } from "@/lib/site-defaults";
+import { mergeSiteSettings } from "@/lib/site-normalize";
 import { withBase } from "@/lib/public";
 
 const Ctx = createContext<SiteSettings>(DEFAULT_SITE_SETTINGS);
@@ -41,7 +42,7 @@ export default function SiteProvider({ children }: { children: ReactNode }) {
         if (res.ok) {
           const data = await res.json();
           if (alive && data.settings) {
-            const merged = { ...DEFAULT_SITE_SETTINGS, ...data.settings };
+            const merged = mergeSiteSettings(data.settings);
             setSettings(merged);
             applyTheme(merged.theme);
             return;
@@ -65,7 +66,7 @@ export default function SiteProvider({ children }: { children: ReactNode }) {
             /* noop */
           }
           if (alive && Object.keys(obj).length) {
-            const merged = { ...DEFAULT_SITE_SETTINGS, ...obj } as SiteSettings;
+            const merged = mergeSiteSettings(obj);
             setSettings(merged);
             applyTheme(merged.theme);
           }
