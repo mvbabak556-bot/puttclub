@@ -1,41 +1,141 @@
-import Link from "next/link";
-import { ArrowLeft, Flag, Medal, ShoppingBag, Sparkles, Target, Timer, Trophy } from "lucide-react";
-import { Reveal, Stagger, StaggerItem } from "@/components/Motion";
+"use client";
 
-const PROGRAMS = [
-  {
-    icon: Sparkles,
-    title: "آموزش مقدماتی",
-    desc: "آشنایی با گریپ، استنس، پات و سوئینگ پایه؛ شروع درست برای کسانی که تازه وارد دنیای گلف شده‌اند.",
-  },
-  {
-    icon: Target,
-    title: "کلاس خصوصی",
-    desc: "برنامه اختصاصی یک‌به‌یک با مربی؛ تحلیل سوئینگ و رفع ایرادهای تکنیکی در کوتاه‌ترین زمان.",
-  },
-  {
-    icon: Flag,
-    title: "گلف نوجوانان",
-    desc: "دوره‌های شاد و اصولی برای نسل آینده گلف؛ آموزش پایه همراه با بازی و تمرین گروهی.",
-  },
-  {
-    icon: Timer,
-    title: "تمرین در زمین",
-    desc: "بازی آموزشی همراه مربی در زمین واقعی؛ مدیریت بازی، انتخاب چوب و استراتژی هر هول.",
-  },
-  {
-    icon: Trophy,
-    title: "آمادگی مسابقه",
-    desc: "برنامه فشرده برای بازیکنان رقابتی؛ تمرین ذهنی، کنترل فشار و آمادگی تورنمنت.",
-  },
-  {
-    icon: Medal,
-    title: "عضویت باشگاه",
-    desc: "عضویت در باشگاه پات کلاب با دسترسی به تمرین‌ها، رویدادها و تخفیف فروشگاه تجهیزات.",
-  },
+import { useEffect, useState } from "react";
+import Link from "next/link";
+import { AnimatePresence, motion } from "framer-motion";
+import {
+  ArrowLeft,
+  Camera,
+  ChevronDown,
+  Crown,
+  Flag,
+  Gift,
+  Globe,
+  Heart,
+  Medal,
+  MessageCircle,
+  Phone,
+  Send,
+  Shield,
+  ShoppingBag,
+  Sparkles,
+  Star,
+  Target,
+  Timer,
+  Trophy,
+  X,
+  Zap,
+} from "lucide-react";
+import { Reveal } from "@/components/Motion";
+import CourseGallery from "@/components/CourseGallery";
+import { useSiteSettings } from "@/components/SiteProvider";
+import type { CourseSocial, SiteCourse, TextSize } from "@/lib/site-defaults";
+import { withBase } from "@/lib/public";
+
+const ICONS: Record<string, typeof Flag> = {
+  Sparkles,
+  Target,
+  Flag,
+  Timer,
+  Trophy,
+  Medal,
+  Star,
+  Zap,
+  Heart,
+  Gift,
+  Crown,
+  Shield,
+};
+
+const SOCIAL_ICONS: Record<CourseSocial["network"], typeof Globe> = {
+  instagram: Camera,
+  telegram: Send,
+  whatsapp: MessageCircle,
+  site: Globe,
+  phone: Phone,
+};
+
+const SOCIAL_LABELS: Record<CourseSocial["network"], string> = {
+  instagram: "اینستاگرام",
+  telegram: "تلگرام",
+  whatsapp: "واتساپ",
+  site: "وب‌سایت",
+  phone: "تماس",
+};
+
+const TITLE_SIZE: Record<TextSize, string> = {
+  sm: "text-lg",
+  md: "text-xl sm:text-2xl",
+  lg: "text-2xl sm:text-3xl",
+  xl: "text-3xl sm:text-4xl",
+};
+
+const BODY_SIZE: Record<TextSize, string> = {
+  sm: "text-xs leading-6",
+  md: "text-sm leading-8",
+  lg: "text-base leading-9",
+  xl: "text-lg leading-10",
+};
+
+const FALLBACK: SiteCourse[] = [
+  { id: 1, title: "آموزش مقدماتی", subtitle: null, shortDesc: "آشنایی با گریپ، استنس، پات و سوئینگ پایه؛ شروع درست برای کسانی که تازه وارد دنیای گلف شده‌اند.", fullDesc: "", icon: "Sparkles", images: [], galleryMode: "featured", layout: "image-right", cardSize: "default", titleColor: null, textColor: null, accentColor: null, titleSize: "md", bodySize: "md", bodyAlign: "right", footerItems: [], socials: [], sortOrder: 1, isActive: true },
+  { id: 2, title: "کلاس خصوصی", subtitle: null, shortDesc: "برنامه اختصاصی یک‌به‌یک با مربی؛ تحلیل سوئینگ و رفع ایرادهای تکنیکی در کوتاه‌ترین زمان.", fullDesc: "", icon: "Target", images: [], galleryMode: "featured", layout: "image-right", cardSize: "default", titleColor: null, textColor: null, accentColor: null, titleSize: "md", bodySize: "md", bodyAlign: "right", footerItems: [], socials: [], sortOrder: 2, isActive: true },
+  { id: 3, title: "گلف نوجوانان", subtitle: null, shortDesc: "دوره‌های شاد و اصولی برای نسل آینده گلف؛ آموزش پایه همراه با بازی و تمرین گروهی.", fullDesc: "", icon: "Flag", images: [], galleryMode: "featured", layout: "image-right", cardSize: "default", titleColor: null, textColor: null, accentColor: null, titleSize: "md", bodySize: "md", bodyAlign: "right", footerItems: [], socials: [], sortOrder: 3, isActive: true },
+  { id: 4, title: "تمرین در زمین", subtitle: null, shortDesc: "بازی آموزشی همراه مربی در زمین واقعی؛ مدیریت بازی، انتخاب چوب و استراتژی هر هول.", fullDesc: "", icon: "Timer", images: [], galleryMode: "featured", layout: "image-right", cardSize: "default", titleColor: null, textColor: null, accentColor: null, titleSize: "md", bodySize: "md", bodyAlign: "right", footerItems: [], socials: [], sortOrder: 4, isActive: true },
+  { id: 5, title: "آمادگی مسابقه", subtitle: null, shortDesc: "برنامه فشرده برای بازیکنان رقابتی؛ تمرین ذهنی، کنترل فشار و آمادگی تورنمنت.", fullDesc: "", icon: "Trophy", images: [], galleryMode: "featured", layout: "image-right", cardSize: "default", titleColor: null, textColor: null, accentColor: null, titleSize: "md", bodySize: "md", bodyAlign: "right", footerItems: [], socials: [], sortOrder: 5, isActive: true },
+  { id: 6, title: "عضویت باشگاه", subtitle: null, shortDesc: "عضویت در باشگاه پات کلاب با دسترسی به تمرین‌ها، رویدادها و تخفیف فروشگاه تجهیزات.", fullDesc: "", icon: "Medal", images: [], galleryMode: "featured", layout: "image-right", cardSize: "default", titleColor: null, textColor: null, accentColor: null, titleSize: "md", bodySize: "md", bodyAlign: "right", footerItems: [], socials: [], sortOrder: 6, isActive: true },
 ];
 
 export default function Programs() {
+  const settings = useSiteSettings();
+  const [courses, setCourses] = useState<SiteCourse[]>(FALLBACK);
+  const [openId, setOpenId] = useState<number | null>(null);
+
+  useEffect(() => {
+    let alive = true;
+    (async () => {
+      try {
+        const res = await fetch(withBase("/api/site/courses"));
+        if (res.ok) {
+          const data = await res.json();
+          if (alive && data.courses?.length) {
+            setCourses(data.courses);
+            return;
+          }
+        }
+      } catch {
+        /* fallback */
+      }
+      try {
+        const res = await fetch(withBase("/data/site-courses.json"));
+        if (res.ok) {
+          const data = await res.json();
+          let rows = (Array.isArray(data) ? data : []) as SiteCourse[];
+          try {
+            const local = localStorage.getItem("puttclub_demo_site-courses");
+            if (local) rows = JSON.parse(local);
+          } catch {
+            /* noop */
+          }
+          rows = rows.filter((c) => c.isActive !== false);
+          if (alive && rows.length) setCourses(rows);
+        }
+      } catch {
+        /* پیش‌فرض */
+      }
+    })();
+    return () => {
+      alive = false;
+    };
+  }, []);
+
+  const open = courses.find((c) => c.id === openId) ?? null;
+  const sec = settings.coursesSection;
+
+  const toggle = (id: number) => {
+    setOpenId((prev) => (prev === id ? null : id));
+  };
+
   return (
     <section id="programs" className="relative scroll-mt-24 py-24 sm:py-28">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
@@ -43,20 +143,17 @@ export default function Programs() {
           <Reveal>
             <p className="flex items-center gap-3 text-xs font-black tracking-[0.25em] text-gold-400">
               <span className="h-px w-10 bg-gold-500/60" />
-              دوره‌های آموزشی
+              {sec.kicker}
             </p>
             <h2 className="mt-4 text-3xl font-black leading-snug sm:text-5xl">
-              مسیر رشد شما در <span className="text-gold-grad">آکادمی</span>
+              {sec.title} <span className="text-gold-grad">{sec.titleAccent}</span>
             </h2>
-            <p className="mt-4 max-w-lg text-sm leading-7 text-sage">
-              از اولین ضربه تا سکوی قهرمانی؛ برای هر سطح و هر هدف، یک برنامه آموزشی
-              مشخص داریم.
-            </p>
+            <p className="mt-4 max-w-lg text-sm leading-7 text-sage">{sec.desc}</p>
           </Reveal>
           <Reveal delay={0.15}>
             <Link
               href="/academy"
-              className="group inline-flex items-center gap-2 rounded-full border border-gold-500/30 px-5 py-2.5 text-sm font-bold text-gold-300 transition-all hover:border-gold-400 hover:bg-gold-500/10"
+              className="enter-members group inline-flex items-center gap-2 rounded-full border border-gold-500/30 px-5 py-2.5 text-sm font-bold text-gold-300 transition-all hover:border-gold-400 hover:bg-gold-500/10"
             >
               ورود اعضای آکادمی
               <ArrowLeft size={15} className="transition-transform group-hover:-translate-x-1" />
@@ -64,19 +161,162 @@ export default function Programs() {
           </Reveal>
         </div>
 
-        <Stagger className="mt-12 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
-          {PROGRAMS.map((p) => (
-            <StaggerItem key={p.title}>
-              <div className="group h-full rounded-3xl border border-gold-500/10 bg-forest-900 p-7 transition-all duration-500 hover:-translate-y-1 hover:border-gold-500/30">
-                <span className="grid size-13 place-items-center rounded-2xl border border-gold-500/25 bg-forest-800 text-gold-400 transition-all duration-500 group-hover:bg-gold-500 group-hover:text-forest-950">
-                  <p.icon size={22} strokeWidth={1.7} />
+        {/* کارت‌های دوره — با کلیک باز و بسته می‌شوند */}
+        <div className="mt-12 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
+          {courses.map((c, i) => {
+            const Icon = ICONS[c.icon] ?? Sparkles;
+            const active = openId === c.id;
+            return (
+              <motion.button
+                key={c.id}
+                initial={{ opacity: 0, y: 30 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true, margin: "-40px" }}
+                transition={{ duration: 0.6, delay: (i % 3) * 0.08 }}
+                onClick={() => toggle(c.id)}
+                aria-expanded={active}
+                className={`group relative block h-full w-full rounded-3xl border p-7 text-start transition-all duration-500 hover:-translate-y-1 ${
+                  active
+                    ? "border-gold-400/60 bg-forest-800 shadow-[0_20px_50px_-20px_rgba(201,162,75,0.4)]"
+                    : "border-gold-500/10 bg-forest-900 hover:border-gold-500/30"
+                }`}
+              >
+                <span
+                  className={`grid size-13 place-items-center rounded-2xl border transition-all duration-500 ${
+                    active
+                      ? "border-gold-400 bg-gold-500 text-forest-950"
+                      : "border-gold-500/25 bg-forest-800 text-gold-400 group-hover:bg-gold-500 group-hover:text-forest-950"
+                  }`}
+                >
+                  <Icon size={22} strokeWidth={1.7} />
                 </span>
-                <h3 className="mt-5 text-lg font-black">{p.title}</h3>
-                <p className="mt-2 text-sm leading-7 text-sage">{p.desc}</p>
+                <span className="mt-5 block text-lg font-black" style={c.titleColor ? { color: c.titleColor } : undefined}>
+                  {c.title}
+                </span>
+                {c.subtitle && (
+                  <span className="mt-1 block text-xs font-bold text-gold-400">{c.subtitle}</span>
+                )}
+                <span className="mt-2 block text-sm leading-7 text-sage">{c.shortDesc}</span>
+                <span
+                  className={`mt-4 inline-flex items-center gap-1.5 text-xs font-bold transition-colors ${
+                    active ? "text-gold-300" : "text-sage group-hover:text-gold-300"
+                  }`}
+                >
+                  {active ? "بستن جزئیات" : "دیدن جزئیات"}
+                  <ChevronDown size={14} className={`transition-transform ${active ? "rotate-180" : ""}`} />
+                </span>
+              </motion.button>
+            );
+          })}
+        </div>
+
+        {/* پنل جزئیات — زیر کارت‌ها، بالای بنر فروشگاه */}
+        <AnimatePresence mode="wait">
+          {open && (
+            <motion.div
+              key={open.id}
+              initial={{ opacity: 0, height: 0 }}
+              animate={{ opacity: 1, height: "auto" }}
+              exit={{ opacity: 0, height: 0 }}
+              transition={{ duration: 0.45, ease: [0.22, 1, 0.36, 1] }}
+              className="overflow-hidden"
+            >
+              <div
+                className={`mt-6 overflow-hidden rounded-[2rem] border border-gold-500/25 bg-forest-900/80 shadow-2xl ${
+                  open.cardSize === "compact" ? "mx-auto max-w-3xl" : ""
+                } ${open.cardSize === "large" ? "lg:p-12" : "lg:p-10"} p-6 sm:p-8`}
+              >
+                <div className="flex items-start justify-between gap-4">
+                  <div>
+                    <p className="text-xs font-black tracking-[0.2em] text-gold-400">{open.subtitle || "جزئیات دوره"}</p>
+                    <h3
+                      className={`mt-2 font-black leading-snug ${TITLE_SIZE[open.titleSize] ?? TITLE_SIZE.md}`}
+                      style={open.titleColor ? { color: open.titleColor } : undefined}
+                    >
+                      {open.title}
+                    </h3>
+                  </div>
+                  <button
+                    onClick={() => setOpenId(null)}
+                    aria-label="بستن"
+                    className="grid size-10 shrink-0 place-items-center rounded-full border border-forest-600 text-sage transition-colors hover:border-gold-500/50 hover:text-gold-300"
+                  >
+                    <X size={17} />
+                  </button>
+                </div>
+
+                <div
+                  className={`mt-6 grid gap-8 ${
+                    open.layout === "image-top" ? "grid-cols-1" : "grid-cols-1 lg:grid-cols-2"
+                  }`}
+                >
+                  {open.images.length > 0 && (
+                    <div className={open.layout === "image-left" ? "lg:order-2" : ""}>
+                      <CourseGallery images={open.images} mode={open.galleryMode} title={open.title} />
+                    </div>
+                  )}
+                  <div className={open.images.length === 0 ? "lg:col-span-2" : ""}>
+                    {open.fullDesc ? (
+                      <div
+                        className={`${BODY_SIZE[open.bodySize] ?? BODY_SIZE.md} whitespace-pre-line text-cream/85 ${
+                          open.bodyAlign === "center"
+                            ? "text-center"
+                            : open.bodyAlign === "justify"
+                              ? "text-justify"
+                              : ""
+                        }`}
+                        style={open.textColor ? { color: open.textColor } : undefined}
+                      >
+                        {open.fullDesc}
+                      </div>
+                    ) : (
+                      <p className="text-sm leading-8 text-sage">{open.shortDesc}</p>
+                    )}
+
+                    {open.footerItems.length > 0 && (
+                      <ul className="mt-6 grid gap-2.5 sm:grid-cols-2">
+                        {open.footerItems.map((f, i) => (
+                          <li
+                            key={i}
+                            className="rounded-2xl border border-gold-500/10 bg-forest-950/60 px-4 py-3"
+                          >
+                            <span className="block text-[11px] text-sage">{f.label}</span>
+                            <span
+                              className="mt-1 block text-sm font-bold"
+                              style={open.accentColor ? { color: open.accentColor } : undefined}
+                            >
+                              {f.value}
+                            </span>
+                          </li>
+                        ))}
+                      </ul>
+                    )}
+
+                    {open.socials.length > 0 && (
+                      <div className="mt-6 flex flex-wrap items-center gap-2.5">
+                        {open.socials.map((s, i) => {
+                          const SIcon = SOCIAL_ICONS[s.network] ?? Globe;
+                          return (
+                            <a
+                              key={i}
+                              href={s.url}
+                              target={s.url.startsWith("http") ? "_blank" : undefined}
+                              rel={s.url.startsWith("http") ? "noreferrer" : undefined}
+                              className="inline-flex items-center gap-2 rounded-full border border-gold-500/25 px-4 py-2 text-xs font-bold text-gold-300 transition-all hover:border-gold-400 hover:bg-gold-500/10"
+                            >
+                              <SIcon size={14} />
+                              {s.label || SOCIAL_LABELS[s.network]}
+                            </a>
+                          );
+                        })}
+                      </div>
+                    )}
+                  </div>
+                </div>
               </div>
-            </StaggerItem>
-          ))}
-        </Stagger>
+            </motion.div>
+          )}
+        </AnimatePresence>
 
         <Reveal delay={0.1}>
           <Link

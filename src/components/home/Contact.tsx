@@ -1,39 +1,20 @@
-import { Camera, Globe, Mail, MapPin, Phone } from "lucide-react";
-import { Reveal, Stagger, StaggerItem } from "@/components/Motion";
-import { ACADEMY } from "@/lib/academy";
+"use client";
 
-const CARDS = [
-  {
-    icon: Phone,
-    title: "تلفن آکادمی",
-    value: ACADEMY.phoneFa,
-    href: `tel:${ACADEMY.phone}`,
-    ltr: true,
-  },
-  {
-    icon: Mail,
-    title: "ایمیل",
-    value: ACADEMY.email,
-    href: `mailto:${ACADEMY.email}`,
-    ltr: true,
-  },
-  {
-    icon: MapPin,
-    title: "آدرس",
-    value: ACADEMY.address,
-    href: undefined,
-    ltr: false,
-  },
-  {
-    icon: Camera,
-    title: "اینستاگرام",
-    value: `@${ACADEMY.instagram}`,
-    href: ACADEMY.instagramUrl,
-    ltr: true,
-  },
-];
+import { Camera, Clock, Globe, Mail, MapPin, Phone } from "lucide-react";
+import { Reveal, Stagger, StaggerItem } from "@/components/Motion";
+import { useSiteSettings } from "@/components/SiteProvider";
 
 export default function Contact() {
+  const settings = useSiteSettings();
+  const c = settings.contact;
+
+  const CARDS = [
+    { icon: Phone, title: "تلفن آکادمی", value: c.phoneFa, href: `tel:${c.phone}`, ltr: true },
+    { icon: Mail, title: "ایمیل", value: c.email, href: `mailto:${c.email}`, ltr: true },
+    { icon: MapPin, title: "آدرس", value: c.address, href: undefined, ltr: false },
+    { icon: Camera, title: "اینستاگرام", value: `@${c.instagram}`, href: c.instagramUrl, ltr: true },
+  ];
+
   return (
     <section id="contact" className="relative scroll-mt-24 py-24 sm:py-28">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
@@ -50,31 +31,37 @@ export default function Contact() {
             برای ثبت‌نام در دوره‌ها، رزرو کلاس خصوصی یا مشاوره خرید تجهیزات، با ما در
             تماس باشید.
           </p>
+          {c.hours && (
+            <p className="mt-3 inline-flex items-center gap-2 text-xs font-bold text-gold-300">
+              <Clock size={14} />
+              {c.hours}
+            </p>
+          )}
         </Reveal>
 
         <Stagger className="mt-12 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
-          {CARDS.map((c) => {
+          {CARDS.map((card) => {
             const inner = (
               <>
                 <span className="grid size-13 place-items-center rounded-2xl border border-gold-500/25 bg-forest-800 text-gold-400 transition-all duration-500 group-hover:bg-gold-500 group-hover:text-forest-950">
-                  <c.icon size={22} strokeWidth={1.7} />
+                  <card.icon size={22} strokeWidth={1.7} />
                 </span>
-                <span className="mt-5 block text-sm font-black">{c.title}</span>
+                <span className="mt-5 block text-sm font-black">{card.title}</span>
                 <span
                   className="mt-2 block text-sm font-bold text-gold-300"
-                  dir={c.ltr ? "ltr" : "rtl"}
+                  dir={card.ltr ? "ltr" : "rtl"}
                 >
-                  {c.value}
+                  {card.value}
                 </span>
               </>
             );
             return (
-              <StaggerItem key={c.title}>
-                {c.href ? (
+              <StaggerItem key={card.title}>
+                {card.href ? (
                   <a
-                    href={c.href}
-                    target={c.href.startsWith("http") ? "_blank" : undefined}
-                    rel={c.href.startsWith("http") ? "noreferrer" : undefined}
+                    href={card.href}
+                    target={card.href.startsWith("http") ? "_blank" : undefined}
+                    rel={card.href.startsWith("http") ? "noreferrer" : undefined}
                     className="group block h-full rounded-3xl border border-gold-500/10 bg-forest-900 p-7 text-center transition-all duration-500 hover:-translate-y-1 hover:border-gold-500/30"
                   >
                     {inner}
@@ -92,13 +79,13 @@ export default function Contact() {
         <Reveal delay={0.15}>
           <div className="mt-8 text-center">
             <a
-              href={ACADEMY.siteUrl}
+              href={c.siteUrl}
               target="_blank"
               rel="noreferrer"
               className="inline-flex items-center gap-2 rounded-full border border-gold-500/30 px-6 py-3 text-sm font-bold text-gold-300 transition-all hover:border-gold-400 hover:bg-gold-500/10"
             >
               <Globe size={16} />
-              <span dir="ltr">{ACADEMY.domain}</span>
+              <span dir="ltr">{c.domain}</span>
             </a>
           </div>
         </Reveal>

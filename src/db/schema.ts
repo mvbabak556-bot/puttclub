@@ -84,3 +84,56 @@ export const categories = pgTable("categories", {
   image: text("image"),
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
+
+export interface CourseFooterItem {
+  label: string;
+  value: string;
+}
+
+export interface CourseSocial {
+  network: "instagram" | "telegram" | "whatsapp" | "site" | "phone";
+  url: string;
+  label?: string;
+}
+
+export const siteCourses = pgTable("site_courses", {
+  id: serial("id").primaryKey(),
+  title: text("title").notNull(),
+  subtitle: text("subtitle"),
+  shortDesc: text("short_desc").notNull(),
+  fullDesc: text("full_desc").notNull().default(""),
+  icon: varchar("icon", { length: 40 }).notNull().default("Sparkles"),
+  images: jsonb("images").$type<string[]>().notNull().default([]),
+  galleryMode: varchar("gallery_mode", { length: 20 }).notNull().default("featured"),
+  layout: varchar("layout", { length: 20 }).notNull().default("image-right"),
+  cardSize: varchar("card_size", { length: 20 }).notNull().default("default"),
+  titleColor: varchar("title_color", { length: 20 }),
+  textColor: varchar("text_color", { length: 20 }),
+  accentColor: varchar("accent_color", { length: 20 }),
+  titleSize: varchar("title_size", { length: 10 }).notNull().default("md"),
+  bodySize: varchar("body_size", { length: 10 }).notNull().default("md"),
+  bodyAlign: varchar("body_align", { length: 10 }).notNull().default("right"),
+  footerItems: jsonb("footer_items").$type<CourseFooterItem[]>().notNull().default([]),
+  socials: jsonb("socials").$type<CourseSocial[]>().notNull().default([]),
+  sortOrder: integer("sort_order").notNull().default(0),
+  isActive: boolean("is_active").notNull().default(true),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+export const siteTestimonials = pgTable("site_testimonials", {
+  id: serial("id").primaryKey(),
+  name: text("name").notNull(),
+  phone: varchar("phone", { length: 20 }).notNull(),
+  role: text("role"),
+  text: text("text").notNull(),
+  rating: integer("rating").notNull().default(5),
+  status: varchar("status", { length: 20 }).notNull().default("pending"),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+export const siteSettings = pgTable("site_settings", {
+  id: serial("id").primaryKey(),
+  key: varchar("key", { length: 60 }).notNull().unique(),
+  value: jsonb("value").notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+});

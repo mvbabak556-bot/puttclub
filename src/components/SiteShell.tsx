@@ -8,31 +8,28 @@ import CartDrawer from "@/components/CartDrawer";
 import ScrollProgress from "@/components/ScrollProgress";
 
 /**
- * صفحه ورود اعضای آکادمی (/academy) و داشبورد مدیریتی (/admin) پنل مستقل‌اند —
- * پس بدون هدر، فوتر، سبد خرید و نوار پیشرفت نمایش داده می‌شوند.
+ * - محتوای عمومی (خانه، فروشگاه، محصول، /academy و...) داخل #public-site
+ * - فقط /admin و /admin/site پنل مستقل‌اند و بدون هدر/فوتر نمایش داده می‌شوند
+ * - /academy عمداً داخل پوشش عمومی است تا هدر/فوتر سایت بماند (قرارداد پنل مستقل)
  */
 export default function SiteShell({ children }: { children: ReactNode }) {
   const pathname = usePathname() || "";
   const bare =
-    pathname === "/academy" ||
-    pathname.startsWith("/academy/") ||
-    pathname.endsWith("/academy/") ||
     pathname === "/admin" ||
     pathname.startsWith("/admin/") ||
-    pathname.endsWith("/admin/") ||
-    pathname.includes("/admin/login");
+    pathname.endsWith("/admin/");
 
   if (bare) {
     return <main className="min-h-screen">{children}</main>;
   }
 
   return (
-    <>
+    <div id="public-site">
       <ScrollProgress />
       <Header />
       <main className="min-h-screen">{children}</main>
       <Footer />
       <CartDrawer />
-    </>
+    </div>
   );
 }

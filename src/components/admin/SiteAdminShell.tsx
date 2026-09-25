@@ -5,42 +5,38 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { AnimatePresence, motion } from "framer-motion";
 import {
+  BookOpen,
   Eye,
-  FolderOpen,
-  Globe,
-  LayoutDashboard,
+  FileText,
   Loader2,
   LogOut,
-  MessageSquare,
-  Package,
-  ShieldCheck,
-  ShoppingBag,
-  Users,
+  Menu as MenuIcon,
+  MessageSquareHeart,
+  Palette,
+  Phone,
+  Store,
 } from "lucide-react";
 import { clearAdmin, getAdmin, type AdminSession } from "@/lib/admin";
-import Overview from "@/components/admin/Overview";
-import OrdersManager from "@/components/admin/OrdersManager";
-import ProductsManager from "@/components/admin/ProductsManager";
-import CategoriesManager from "@/components/admin/CategoriesManager";
-import ReviewsManager from "@/components/admin/ReviewsManager";
-import UsersManager from "@/components/admin/UsersManager";
+import SiteCourses from "@/components/admin/SiteCourses";
+import SiteTestimonials from "@/components/admin/SiteTestimonials";
+import { ContactPanel, ContentPanels, MenuPanel, ThemePanel } from "@/components/admin/SiteSettingsPanels";
 
 const TABS = [
-  { key: "overview", label: "نمای کلی", icon: LayoutDashboard },
-  { key: "orders", label: "سفارش‌ها", icon: ShoppingBag },
-  { key: "products", label: "محصولات", icon: Package },
-  { key: "categories", label: "دسته‌بندی‌ها", icon: FolderOpen },
-  { key: "reviews", label: "دیدگاه‌ها", icon: MessageSquare },
-  { key: "users", label: "کاربران", icon: Users },
+  { key: "courses", label: "دوره‌ها", icon: BookOpen },
+  { key: "testimonials", label: "نظرات گلف‌بازان", icon: MessageSquareHeart },
+  { key: "content", label: "محتوا و تصاویر", icon: FileText },
+  { key: "theme", label: "قالب", icon: Palette },
+  { key: "contact", label: "تماس", icon: Phone },
+  { key: "menu", label: "منو", icon: MenuIcon },
 ] as const;
 
 type TabKey = (typeof TABS)[number]["key"];
 
-export default function AdminShell() {
+export default function SiteAdminShell() {
   const router = useRouter();
   const [admin, setAdminState] = useState<AdminSession | null>(null);
   const [ready, setReady] = useState(false);
-  const [tab, setTab] = useState<TabKey>("overview");
+  const [tab, setTab] = useState<TabKey>("courses");
 
   useEffect(() => {
     const a = getAdmin();
@@ -62,18 +58,12 @@ export default function AdminShell() {
 
   return (
     <div className="min-h-screen lg:grid lg:grid-cols-[264px_1fr]">
-      {/* Sidebar */}
       <aside className="hidden border-e border-gold-500/10 bg-forest-900/70 lg:block">
         <div className="sticky top-0 flex h-screen flex-col p-6">
-          <div className="flex items-center gap-3 rounded-2xl border border-gold-500/15 bg-forest-950/60 p-4">
-            <span className="grid size-11 shrink-0 place-items-center rounded-xl bg-gold-500 text-forest-950">
-              <ShieldCheck size={22} />
-            </span>
-            <div className="min-w-0">
-              <div className="truncate text-sm font-black">{admin.name}</div>
-              <div className="mt-0.5 truncate text-[11px] text-sage" dir="ltr">
-                {admin.email}
-              </div>
+          <div className="rounded-2xl border border-gold-500/15 bg-forest-950/60 p-4">
+            <div className="text-sm font-black">مدیریت سایت</div>
+            <div className="mt-0.5 truncate text-[11px] text-sage" dir="ltr">
+              {admin.email}
             </div>
           </div>
 
@@ -96,18 +86,18 @@ export default function AdminShell() {
 
           <div className="space-y-1.5 border-t border-gold-500/10 pt-4">
             <Link
-              href="/admin/site"
+              href="/admin"
               className="flex items-center gap-3 rounded-2xl px-4 py-3 text-sm font-bold text-sage transition-colors hover:text-gold-300"
             >
-              <Globe size={18} />
-              مدیریت سایت
+              <Store size={18} />
+              مدیریت فروشگاه
             </Link>
             <Link
               href="/"
               className="flex items-center gap-3 rounded-2xl px-4 py-3 text-sm font-bold text-sage transition-colors hover:text-gold-300"
             >
               <Eye size={18} />
-              مشاهده فروشگاه
+              مشاهده سایت
             </Link>
             <button
               onClick={() => {
@@ -123,22 +113,17 @@ export default function AdminShell() {
         </div>
       </aside>
 
-      {/* Main */}
       <div className="min-w-0">
-        {/* Mobile top bar */}
         <div className="sticky top-0 z-30 border-b border-gold-500/10 bg-forest-950/90 backdrop-blur lg:hidden">
           <div className="flex items-center justify-between px-4 py-3">
-            <span className="flex items-center gap-2 text-sm font-black">
-              <ShieldCheck size={18} className="text-gold-400" />
-              داشبورد مدیر
-            </span>
+            <span className="text-sm font-black">مدیریت سایت</span>
             <div className="flex items-center gap-2">
               <Link
-                href="/"
-                aria-label="مشاهده فروشگاه"
+                href="/admin"
+                aria-label="مدیریت فروشگاه"
                 className="grid size-9 place-items-center rounded-full border border-forest-600 text-sage"
               >
-                <Eye size={16} />
+                <Store size={16} />
               </Link>
               <button
                 onClick={() => {
@@ -177,12 +162,12 @@ export default function AdminShell() {
               exit={{ opacity: 0, y: -10 }}
               transition={{ duration: 0.3 }}
             >
-              {tab === "overview" && <Overview onGo={setTab} />}
-              {tab === "orders" && <OrdersManager />}
-              {tab === "products" && <ProductsManager />}
-              {tab === "categories" && <CategoriesManager />}
-              {tab === "reviews" && <ReviewsManager />}
-              {tab === "users" && <UsersManager />}
+              {tab === "courses" && <SiteCourses />}
+              {tab === "testimonials" && <SiteTestimonials />}
+              {tab === "content" && <ContentPanels />}
+              {tab === "theme" && <ThemePanel />}
+              {tab === "contact" && <ContactPanel />}
+              {tab === "menu" && <MenuPanel />}
             </motion.div>
           </AnimatePresence>
         </div>

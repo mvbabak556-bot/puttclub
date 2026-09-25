@@ -5,7 +5,7 @@ import Link from "next/link";
 import { motion, useScroll, useTransform } from "framer-motion";
 import { ArrowLeft, ChevronDown, Flag, ShoppingBag, Sparkles } from "lucide-react";
 import { STOCK } from "@/lib/data";
-import { ACADEMY } from "@/lib/academy";
+import { useSiteSettings } from "@/components/SiteProvider";
 import { withBase } from "@/lib/public";
 
 const EASE = [0.22, 1, 0.36, 1] as const;
@@ -25,13 +25,9 @@ function Line({ children, delay }: { children: ReactNode; delay: number }) {
   );
 }
 
-const STATS = [
-  { value: "اهواز", label: "خانه آکادمی" },
-  { value: "مبتدی تا حرفه‌ای", label: "سطوح آموزشی" },
-  { value: "puttclub.ir", label: "وب‌سایت رسمی" },
-];
-
 export default function Hero() {
+  const settings = useSiteSettings();
+  const hero = settings.hero;
   const ref = useRef<HTMLElement>(null);
   const { scrollYProgress } = useScroll({
     target: ref,
@@ -72,13 +68,13 @@ export default function Hero() {
           className="mb-8 inline-flex items-center gap-2 rounded-full border border-gold-500/30 bg-forest-950/40 px-4 py-2 text-xs font-medium text-gold-200 backdrop-blur"
         >
           <Sparkles size={14} className="text-gold-400" />
-          {ACADEMY.enName} — {ACADEMY.address}
+          {hero.badge}
         </motion.div>
 
         <h1 className="text-[13.5vw] font-black leading-[1.12] tracking-tight sm:text-7xl lg:text-8xl">
-          <Line delay={0.3}>آکادمی گلف</Line>
+          <Line delay={0.3}>{hero.line1}</Line>
           <Line delay={0.45}>
-            <span className="text-gold-grad">پات کلاب</span>
+            <span className="text-gold-grad">{hero.line2}</span>
           </Line>
         </h1>
 
@@ -88,8 +84,7 @@ export default function Hero() {
           transition={{ duration: 0.9, delay: 0.75, ease: EASE }}
           className="mt-8 max-w-xl text-base leading-8 text-cream/75 sm:text-lg sm:leading-9"
         >
-          از اولین سوئینگ تا آمادگی مسابقه؛ آموزش اصولی گلف با مربیان حرفه‌ای در اهواز،
-          همراه با فروشگاه تخصصی تجهیزات اورجینال.
+          {hero.subtitle}
         </motion.p>
 
         <motion.div
@@ -100,7 +95,7 @@ export default function Hero() {
         >
           <Link
             href="/academy"
-            className="group inline-flex items-center gap-2 rounded-full bg-gold-500 px-8 py-4 text-sm font-black text-forest-950 shadow-[0_16px_40px_-12px_rgba(201,162,75,0.6)] transition-all hover:bg-gold-400"
+            className="enter-members group inline-flex items-center gap-2 rounded-full bg-gold-500 px-8 py-4 text-sm font-black text-forest-950 shadow-[0_16px_40px_-12px_rgba(201,162,75,0.6)] transition-all hover:bg-gold-400"
           >
             <Flag size={17} />
             ورود اعضای آکادمی
@@ -122,7 +117,7 @@ export default function Hero() {
           transition={{ duration: 0.9, delay: 1.1, ease: EASE }}
           className="mt-16 flex items-center gap-8 sm:gap-12"
         >
-          {STATS.map((s, i) => (
+          {hero.stats.map((s, i) => (
             <div key={s.label} className="flex items-center gap-8 sm:gap-12">
               {i > 0 && <span className="h-9 w-px bg-gold-500/25" />}
               <div className="text-center">

@@ -1,7 +1,7 @@
 import { createHash } from "crypto";
 import { eq, sql } from "drizzle-orm";
 import { db } from "./index";
-import { categories, products, users } from "./schema";
+import { categories, products, siteCourses, users } from "./schema";
 
 const sha = (s: string) => createHash("sha256").update(s).digest("hex");
 
@@ -71,6 +71,45 @@ const DDL = [
     created_at timestamp NOT NULL DEFAULT now()
   )`,
   `ALTER TABLE users ADD COLUMN IF NOT EXISTS role varchar(20) NOT NULL DEFAULT 'member'`,
+  `CREATE TABLE IF NOT EXISTS site_courses (
+    id serial PRIMARY KEY,
+    title text NOT NULL,
+    subtitle text,
+    short_desc text NOT NULL,
+    full_desc text NOT NULL DEFAULT '',
+    icon varchar(40) NOT NULL DEFAULT 'Sparkles',
+    images jsonb NOT NULL DEFAULT '[]',
+    gallery_mode varchar(20) NOT NULL DEFAULT 'featured',
+    layout varchar(20) NOT NULL DEFAULT 'image-right',
+    card_size varchar(20) NOT NULL DEFAULT 'default',
+    title_color varchar(20),
+    text_color varchar(20),
+    accent_color varchar(20),
+    title_size varchar(10) NOT NULL DEFAULT 'md',
+    body_size varchar(10) NOT NULL DEFAULT 'md',
+    body_align varchar(10) NOT NULL DEFAULT 'right',
+    footer_items jsonb NOT NULL DEFAULT '[]',
+    socials jsonb NOT NULL DEFAULT '[]',
+    sort_order integer NOT NULL DEFAULT 0,
+    is_active boolean NOT NULL DEFAULT true,
+    created_at timestamp NOT NULL DEFAULT now()
+  )`,
+  `CREATE TABLE IF NOT EXISTS site_testimonials (
+    id serial PRIMARY KEY,
+    name text NOT NULL,
+    phone varchar(20) NOT NULL,
+    role text,
+    text text NOT NULL,
+    rating integer NOT NULL DEFAULT 5,
+    status varchar(20) NOT NULL DEFAULT 'pending',
+    created_at timestamp NOT NULL DEFAULT now()
+  )`,
+  `CREATE TABLE IF NOT EXISTS site_settings (
+    id serial PRIMARY KEY,
+    key varchar(60) NOT NULL UNIQUE,
+    value jsonb NOT NULL,
+    updated_at timestamp NOT NULL DEFAULT now()
+  )`,
 ];
 
 let pending: Promise<void> | null = null;
@@ -102,6 +141,14 @@ export function bootstrapDatabase(): Promise<void> {
           const names = ["چوب‌ها", "توپ‌ها", "کیف‌ها", "کفش و دستکش", "پوشاک", "لوازم جانبی"];
           await db.insert(categories).values(names.map((name) => ({ name })));
           console.log("[puttclub] base categories seeded");
+        }
+        // محتوای سایت (دوره‌ها، نظرات، تنظیمات) اگر نباشد
+        const [scrow] = await db
+          .select({ n: sql<number>`count(*)::int` })
+          .from(siteCourses);
+        if (!scrow || scrow.n === 0) {
+          const { seedSiteContent } = await import("./seed-site");
+          await seedSiteContent();
         }
         // کاربر مدیر اگر نباشد — و مهاجرت رمز قدیمی به رمز جدید
         const [admin] = await db

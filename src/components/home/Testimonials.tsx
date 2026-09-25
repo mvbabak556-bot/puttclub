@@ -1,63 +1,213 @@
-import Stars from "@/components/Stars";
-import { Reveal, Stagger, StaggerItem } from "@/components/Motion";
+"use client";
 
-const TESTIMONIALS = [
-  {
-    name: "امیرحسین رضایی",
-    role: "عضو پات‌کلاب — هندیکپ ۴",
-    text: "درایور Pro V1 دقیقاً همان چیزی بود که بازی‌ام کم داشت. مشاوره تیم پات‌کلاب بر اساس شینگل من بی‌نقص بود و ارسال هم فردای همان روز انجام شد.",
-    rating: 5,
-  },
-  {
-    name: "سارا محمدی",
-    role: "بازیکن تازه‌کار",
-    text: "برای شروع، ست کامل از پات‌کلاب خریدم. کیف چرمی‌اش آن‌قدر شیک بود که در کلوب‌هاوس همه پرسیدند از کجا گرفته‌ام!",
-    rating: 5,
-  },
-  {
-    name: "رضا توکلی",
-    role: "مربی گلف",
-    text: "به شاگردهایم همیشه توپ‌های تور پات‌کلاب را پیشنهاد می‌دهم؛ اسپین روی گرین فوق‌العاده است و قیمت‌ها منصفانه.",
-    rating: 4,
-  },
+import { useEffect, useState } from "react";
+import { motion } from "framer-motion";
+import { CheckCircle2, ChevronDown, Loader2, PenLine, Send, Star } from "lucide-react";
+import Stars from "@/components/Stars";
+import { Reveal } from "@/components/Motion";
+import { useSiteSettings } from "@/components/SiteProvider";
+import type { SiteTestimonial } from "@/lib/site-defaults";
+import { faNum } from "@/lib/format";
+import { withBase } from "@/lib/public";
+
+const PAGE = 6;
+const INITIAL = 3;
+
+const FALLBACK: SiteTestimonial[] = [
+  { id: 1, name: "امیرحسین رضایی", role: "عضو پات‌کلاب — هندیکپ ۴", text: "درایور Pro V1 دقیقاً همان چیزی بود که بازی‌ام کم داشت. مشاوره تیم پات‌کلاب بی‌نقص بود و ارسال هم فردای همان روز انجام شد.", rating: 5, status: "approved", createdAt: "" },
+  { id: 2, name: "سارا محمدی", role: "بازیکن تازه‌کار", text: "برای شروع، ست کامل از پات‌کلاب خریدم. کیف چرمی‌اش آن‌قدر شیک بود که در کلوب‌هاوس همه پرسیدند از کجا گرفته‌ام!", rating: 5, status: "approved", createdAt: "" },
+  { id: 3, name: "رضا توکلی", role: "مربی گلف", text: "به شاگردهایم همیشه توپ‌های تور پات‌کلاب را پیشنهاد می‌دهم؛ اسپین روی گرین فوق‌العاده است و قیمت‌ها منصفانه.", rating: 4, status: "approved", createdAt: "" },
 ];
 
+const toEn = (s: string) =>
+  s
+    .replace(/[۰-۹]/g, (d) => String("۰۱۲۳۴۵۶۷۸۹".indexOf(d)))
+    .replace(/[٠-٩]/g, (d) => String("٠١٢٣٤٥٦٧٨٩".indexOf(d)));
+
 export default function Testimonials() {
+  const settings = useSiteSettings();
+  const [list, setList] = useState<SiteTestimonial[]>(FALLBACK);
+  const [visible, setVisible] = useState(INITIAL);
+  const [name, setName] = useState("");
+  const [phone, setPhone] = useState("");
+  const [text, setText] = useState("");
+  const [stars, setStars] = useState(5);
+  const [loading, setLoading] = useState(false);
+  const [done, setDone] = useState(false);
+  const [error, setError] = useState("");
+
+  useEffect(() => {
+    let alive = true;
+    (async () => {
+      try {
+        const res = await fetch(withBase("/api/site/testimonials"));
+        if (res.ok) {
+          const data = await res.json();
+          if (alive && data.testimonials?.length) {
+            setList(data.testimonials);
+            return;
+          }
+        }
+      } catch {
+        /* fallback */
+      }
+      try {
+        const res = await fetch(withBase("/data/site-testimonials.json"));
+        if (res.ok) {
+          const data = await res.json();
+          const rows = (Array.isArray(data) ? data : []).filter(
+            (t: SiteTestimonial) => t.status === "approved"
+          );
+          if (alive && rows.length) setList(rows);
+        }
+      } catch {
+        /* پیش‌فرض */
+      }
+    })();
+    return () => {
+      alive = false;
+    };
+  }, []);
+
+  const submit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError("");
+    if (name.trim().length < 3) return setError("نام و نام خانوادگی را کامل وارد کنید.");
+    if (!/^09\d{9}$/.test(toEn(phone.trim()))) return setError("شماره تماس معتبر نیست (مثل ۰۹۱۲۳۴۵۶۷۸۹).");
+    if (text.trim().length < 10) return setError("متن نظر کوتاه است؛ کمی بیشتر بنویسید.");
+    setLoading(true);
+    try {
+      let res: Response | null = null;
+      try {
+        res = await fetch(withBase("/api/site/testimonials"), {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ name: name.trim(), phone: toEn(phone.trim()), text: text.trim(), rating: stars }),
+        });
+      } catch {
+        res = null;
+      }
+      if (!res || res.status === 404 || res.status === 405) {
+        // هاست استاتیک — ذخیره محلی در انتظار تأیید
+        try {
+          const raw = localStorage.getItem("puttclub_local_site_testimonials") || "[]";
+          const arr = JSON.parse(raw);
+          arr.unshift({ id: Date.now(), name: name.trim(), phone: toEn(phone.trim()), text: text.trim(), rating: stars, status: "pending", createdAt: new Date().toISOString() });
+          localStorage.setItem("puttclub_local_site_testimonials", JSON.stringify(arr));
+        } catch {
+          /* noop */
+        }
+      } else if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        setError(data.error || "ثبت نظر ناموفق بود.");
+        return;
+      }
+      setDone(true);
+      setName("");
+      setPhone("");
+      setText("");
+      setStars(5);
+      setTimeout(() => setDone(false), 5000);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const sec = settings.testimonialsSection;
+  const shown = list.slice(0, visible);
+
   return (
-    <section id="testimonials" className="relative py-24 sm:py-28">
+    <section id="testimonials" className="relative scroll-mt-24 py-24 sm:py-28">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <Reveal className="text-center">
           <p className="inline-flex items-center gap-3 text-xs font-black tracking-[0.25em] text-gold-400">
             <span className="h-px w-10 bg-gold-500/60" />
-            نظر اعضا
+            {sec.kicker}
             <span className="h-px w-10 bg-gold-500/60" />
           </p>
           <h2 className="mt-4 text-3xl font-black leading-snug sm:text-5xl">
-            از زبان <span className="text-gold-grad">گلف‌بازان</span>
+            {sec.title} <span className="text-gold-grad">{sec.titleAccent}</span>
           </h2>
+          <p className="mx-auto mt-4 max-w-lg text-sm leading-7 text-sage">{sec.desc}</p>
         </Reveal>
 
-        <Stagger className="mt-14 grid grid-cols-1 gap-5 md:grid-cols-3">
-          {TESTIMONIALS.map((t) => (
-            <StaggerItem key={t.name}>
-              <figure className="flex h-full flex-col rounded-3xl border border-gold-500/10 bg-forest-900 p-8 transition-all duration-500 hover:-translate-y-1 hover:border-gold-500/30">
-                <Stars value={t.rating} size={15} />
-                <blockquote className="mt-5 flex-1 text-sm leading-8 text-cream/85">
-                  «{t.text}»
-                </blockquote>
-                <figcaption className="mt-6 flex items-center gap-3 border-t border-gold-500/10 pt-5">
-                  <span className="grid size-11 place-items-center rounded-full bg-gradient-to-br from-gold-400 to-gold-600 text-base font-black text-forest-950">
-                    {t.name.charAt(0)}
-                  </span>
-                  <div>
-                    <div className="text-sm font-black">{t.name}</div>
-                    <div className="mt-0.5 text-[11px] text-sage">{t.role}</div>
-                  </div>
-                </figcaption>
-              </figure>
-            </StaggerItem>
+        <div className="mt-12 grid grid-cols-1 gap-5 md:grid-cols-3">
+          {shown.map((t, i) => (
+            <motion.figure
+              key={t.id}
+              initial={{ opacity: 0, y: 28 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, margin: "-40px" }}
+              transition={{ duration: 0.6, delay: (i % 3) * 0.08 }}
+              className="flex h-full flex-col rounded-3xl border border-gold-500/10 bg-forest-900 p-8 transition-all duration-500 hover:-translate-y-1 hover:border-gold-500/30"
+            >
+              <Stars value={t.rating} size={15} />
+              <blockquote className="mt-5 flex-1 text-sm leading-8 text-cream/85">
+                «{t.text}»
+              </blockquote>
+              <figcaption className="mt-6 flex items-center gap-3 border-t border-gold-500/10 pt-5">
+                <span className="grid size-11 place-items-center rounded-full bg-gradient-to-br from-gold-400 to-gold-600 text-base font-black text-forest-950">
+                  {t.name.charAt(0)}
+                </span>
+                <div>
+                  <div className="text-sm font-black">{t.name}</div>
+                  {t.role && <div className="mt-0.5 text-[11px] text-sage">{t.role}</div>}
+                </div>
+              </figcaption>
+            </motion.figure>
           ))}
-        </Stagger>
+        </div>
+
+        {visible < list.length && (
+          <div className="mt-8 text-center">
+            <button
+              onClick={() => setVisible((v) => v + PAGE)}
+              className="inline-flex items-center gap-2 rounded-full border border-gold-500/30 px-7 py-3 text-sm font-bold text-gold-300 transition-all hover:border-gold-400 hover:bg-gold-500/10"
+            >
+              نمایش بیشتر ({faNum(Math.min(PAGE, list.length - visible))} نظر دیگر)
+              <ChevronDown size={16} />
+            </button>
+          </div>
+        )}
+
+        {/* فرم ثبت نظر — بدون نیاز به ثبت‌نام */}
+        <Reveal className="mx-auto mt-12 max-w-2xl">
+          <form onSubmit={submit} className="rounded-[2rem] border border-gold-500/15 bg-forest-900/70 p-7 sm:p-9">
+            <h3 className="flex items-center gap-2.5 text-lg font-black">
+              <PenLine size={19} className="text-gold-400" />
+              نظر شما
+            </h3>
+            <p className="mt-2 text-xs leading-6 text-sage">
+              نام و شماره تماس الزامی است (شماره تماس نمایش داده نمی‌شود). نظر شما پس از تأیید مدیر منتشر می‌شود.
+            </p>
+            <div className="mt-6">
+              <label className="mb-2 block text-xs font-bold text-sage">امتیاز شما</label>
+              <div className="flex items-center gap-1" dir="ltr">
+                {[1, 2, 3, 4, 5].map((s) => (
+                  <button key={s} type="button" onClick={() => setStars(s)} aria-label={`${s} ستاره`} className="transition-transform hover:scale-110">
+                    <Star size={26} className={s <= stars ? "fill-gold-400 text-gold-400" : "fill-transparent text-forest-600"} />
+                  </button>
+                ))}
+              </div>
+            </div>
+            <div className="mt-4 grid gap-3 sm:grid-cols-2">
+              <input value={name} onChange={(e) => setName(e.target.value)} placeholder="نام و نام خانوادگی *" className="h-12 w-full rounded-2xl border border-gold-500/15 bg-forest-950/60 px-4 text-sm outline-none placeholder:text-sage/50 focus:border-gold-500/50" />
+              <input value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="شماره تماس *" dir="ltr" inputMode="tel" className="h-12 w-full rounded-2xl border border-gold-500/15 bg-forest-950/60 px-4 text-right text-sm outline-none placeholder:text-sage/50 focus:border-gold-500/50" />
+            </div>
+            <textarea value={text} onChange={(e) => setText(e.target.value)} placeholder="تجربه‌تان از آکادمی یا فروشگاه را بنویسید..." rows={4} className="mt-3 w-full resize-none rounded-2xl border border-gold-500/15 bg-forest-950/60 px-4 py-3.5 text-sm leading-7 outline-none placeholder:text-sage/50 focus:border-gold-500/50" />
+            {error && <p className="mt-3 text-sm font-bold text-red-400">{error}</p>}
+            {done && (
+              <motion.p initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} className="mt-3 flex items-center gap-1.5 text-xs font-bold text-gold-300">
+                <CheckCircle2 size={14} />
+                نظر شما ثبت شد و پس از تأیید مدیر نمایش داده می‌شود. سپاس!
+              </motion.p>
+            )}
+            <button type="submit" disabled={loading} className="mt-5 inline-flex w-full items-center justify-center gap-2 rounded-full bg-gold-500 py-3.5 text-sm font-black text-forest-950 transition-colors hover:bg-gold-400 disabled:opacity-60">
+              {loading ? <Loader2 size={16} className="animate-spin" /> : <Send size={16} />}
+              ثبت نظر
+            </button>
+          </form>
+        </Reveal>
       </div>
     </section>
   );

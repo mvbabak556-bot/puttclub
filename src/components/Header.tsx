@@ -6,17 +6,10 @@ import { usePathname } from "next/navigation";
 import { AnimatePresence, motion } from "framer-motion";
 import { Flag, LayoutGrid, Menu, ShoppingBag, User, X } from "lucide-react";
 import Logo from "@/components/Logo";
+import { useSiteSettings } from "@/components/SiteProvider";
 import { useCartStore } from "@/lib/store";
 import type { SessionUser } from "@/lib/types";
 import { faNum } from "@/lib/format";
-
-const LINKS = [
-  { href: "/", label: "خانه" },
-  { href: "/#academy", label: "آکادمی" },
-  { href: "/#programs", label: "دوره‌ها" },
-  { href: "/shop", label: "فروشگاه" },
-  { href: "/#contact", label: "تماس" },
-];
 
 export default function Header() {
   const [scrolled, setScrolled] = useState(false);
@@ -43,6 +36,8 @@ export default function Header() {
 
   const count = items.reduce((s, i) => s + i.qty, 0);
   const isHome = pathname === "/";
+  const settings = useSiteSettings();
+  const links = settings.menu.filter((m) => m.visible !== false);
 
   // صفحه نخست: ورود اعضای آکادمی — فروشگاه و بقیه صفحات: ورود اعضای فروشگاه (بدون تغییر)
   const memberHref = isHome ? "/academy" : user ? "/panel" : "/login";
@@ -63,9 +58,9 @@ export default function Header() {
       <div className="mx-auto flex h-16 max-w-7xl items-center justify-between gap-4 px-4 sm:h-20 sm:px-6 lg:px-8">
         <Logo />
 
-        {/* Desktop nav */}
+        {/* Desktop nav — از پنل سایت (/admin/site ← منو) */}
         <nav className="hidden items-center gap-7 lg:flex">
-          {LINKS.map((l) => (
+          {links.map((l) => (
             <Link
               key={l.href}
               href={l.href}
@@ -80,6 +75,7 @@ export default function Header() {
         <div className="flex items-center gap-2 sm:gap-3">
           <Link
             href={memberHref}
+            id={isHome ? "enter-members" : undefined}
             className="hidden items-center gap-2 rounded-full border border-gold-500/30 px-4 py-2 text-sm font-medium text-gold-300 transition-all hover:border-gold-400 hover:bg-gold-500/10 sm:inline-flex"
           >
             {isHome ? (
@@ -129,7 +125,7 @@ export default function Header() {
             className="overflow-hidden border-b border-gold-500/10 bg-forest-950/95 backdrop-blur-xl lg:hidden"
           >
             <div className="space-y-1 px-4 py-4 sm:px-6">
-              {LINKS.map((l) => (
+              {links.map((l) => (
                 <Link
                   key={l.href}
                   href={l.href}

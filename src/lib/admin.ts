@@ -72,8 +72,16 @@ function writeLocal(key: string, value: unknown) {
   localStorage.setItem(key, JSON.stringify(value));
 }
 
+export type DemoTableName =
+  | "products"
+  | "categories"
+  | "reviews"
+  | "site-courses"
+  | "site-testimonials"
+  | "site-settings";
+
 /** خواندن اسنپ‌شات استاتیک + ترکیب با تغییرات محلی */
-export async function demoTable<T>(name: "products" | "categories" | "reviews"): Promise<T[]> {
+export async function demoTable<T>(name: DemoTableName): Promise<T[]> {
   const key = `puttclub_demo_${name}`;
   const local = readLocal<T[]>(key);
   if (local) return local;
@@ -88,6 +96,6 @@ export async function demoTable<T>(name: "products" | "categories" | "reviews"):
   }
 }
 
-export function saveDemoTable(name: "products" | "categories" | "reviews", rows: unknown[]) {
+export function saveDemoTable(name: DemoTableName, rows: unknown[]) {
   writeLocal(`puttclub_demo_${name}`, rows);
 }

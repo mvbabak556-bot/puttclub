@@ -3,6 +3,7 @@ import type { ReactNode } from "react";
 import { Vazirmatn, Playfair_Display } from "next/font/google";
 import "./globals.css";
 import SiteShell from "@/components/SiteShell";
+import SiteProvider from "@/components/SiteProvider";
 
 const vazir = Vazirmatn({
   subsets: ["arabic", "latin"],

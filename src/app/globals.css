@@ -41,6 +41,19 @@
   }
 }
 
+/* متغیرهای برند — از پنل مدیریت سایت (/admin/site ← قالب) قابل تغییر است */
+:root {
+  --brand-primary: var(--color-gold-500);
+  --brand-primary-light: var(--color-gold-400);
+  --brand-primary-soft: var(--color-gold-300);
+  --brand-primary-dark: var(--color-gold-600);
+  --brand-bg: var(--color-forest-950);
+  --brand-surface: var(--color-forest-900);
+  --brand-surface-2: var(--color-forest-800);
+  --brand-text: var(--color-cream);
+  --brand-muted: var(--color-sage);
+}
+
 html {
   scroll-behavior: smooth;
 }
