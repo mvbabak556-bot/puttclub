@@ -108,6 +108,13 @@ export interface SiteSettings {
   coursesSection: { kicker: string; title: string; titleAccent: string; desc: string };
   testimonialsSection: { kicker: string; title: string; titleAccent: string; desc: string };
   footer: { aboutText: string };
+  shopGate: {
+    enabled: boolean;
+    title: string;
+    message: string;
+    backLabel: string;
+    code: string;
+  };
 }
 
 export const DEFAULT_SITE_SETTINGS: SiteSettings = {
@@ -187,6 +194,14 @@ export const DEFAULT_SITE_SETTINGS: SiteSettings = {
   footer: {
     aboutText:
       "آکادمی گلف پات کلاب در اهواز؛ آموزش اصولی گلف از مبتدی تا حرفه‌ای، همراه با فروشگاه تخصصی تجهیزات اورجینال.",
+  },
+  shopGate: {
+    enabled: true,
+    title: "فروشگاه به‌زودی باز می‌شود",
+    message:
+      "فروشگاه پات‌کلاب در حال آماده‌سازی نهایی است و فعلاً فقط به‌صورت آزمایشی باز است؛ سفارش‌ها در این مرحله نهایی نمی‌شوند. از شکیبایی شما سپاسگزاریم — به‌زودی با فروشگاه کامل در خدمتیم.",
+    backLabel: "برگشت به سایت",
+    code: "B",
   },
 };
 

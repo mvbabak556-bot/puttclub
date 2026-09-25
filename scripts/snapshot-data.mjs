@@ -30,6 +30,13 @@ try {
     "SELECT id, name, role, text, rating, status, created_at AS \"createdAt\" FROM site_testimonials ORDER BY id"
   );
   const settings = await pool.query("SELECT key, value FROM site_settings");
+  // رمز مخفی فروشگاه (shopGate.code) هرگز در اسنپ‌شات عمومی قرار نمی‌گیرد
+  const publicSettings = settings.rows.map((row) => {
+    if (row.key !== "shopGate" || !row.value || typeof row.value !== "object") return row;
+    const { code: _code, ...rest } = row.value;
+    void _code;
+    return { ...row, value: rest };
+  });
 
   const dir = path.join(root, "public", "data");
   mkdirSync(dir, { recursive: true });
@@ -38,7 +45,7 @@ try {
   writeFileSync(path.join(dir, "reviews.json"), JSON.stringify(reviews.rows));
   writeFileSync(path.join(dir, "site-courses.json"), JSON.stringify(courses.rows));
   writeFileSync(path.join(dir, "site-testimonials.json"), JSON.stringify(testimonials.rows));
-  writeFileSync(path.join(dir, "site-settings.json"), JSON.stringify(settings.rows));
+  writeFileSync(path.join(dir, "site-settings.json"), JSON.stringify(publicSettings));
   console.log(
     `snapshot: ${products.rows.length} products, ${categories.rows.length} categories, ${reviews.rows.length} reviews, ${courses.rows.length} courses, ${testimonials.rows.length} testimonials, ${settings.rows.length} settings`
   );

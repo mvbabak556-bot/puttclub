@@ -10,6 +10,7 @@ import {
   Globe,
   LayoutDashboard,
   Loader2,
+  LockKeyhole,
   LogOut,
   MessageSquare,
   Package,
@@ -24,6 +25,7 @@ import ProductsManager from "@/components/admin/ProductsManager";
 import CategoriesManager from "@/components/admin/CategoriesManager";
 import ReviewsManager from "@/components/admin/ReviewsManager";
 import UsersManager from "@/components/admin/UsersManager";
+import ShopGateManager from "@/components/admin/ShopGateManager";
 
 const TABS = [
   { key: "overview", label: "نمای کلی", icon: LayoutDashboard },
@@ -32,6 +34,7 @@ const TABS = [
   { key: "categories", label: "دسته‌بندی‌ها", icon: FolderOpen },
   { key: "reviews", label: "دیدگاه‌ها", icon: MessageSquare },
   { key: "users", label: "کاربران", icon: Users },
+  { key: "shopgate", label: "پاپ‌آپ فروشگاه", icon: LockKeyhole },
 ] as const;
 
 type TabKey = (typeof TABS)[number]["key"];
@@ -190,6 +193,7 @@ export default function AdminShell() {
               {tab === "categories" && <CategoriesManager />}
               {tab === "reviews" && <ReviewsManager />}
               {tab === "users" && <UsersManager />}
+              {tab === "shopgate" && <ShopGateManager />}
             </motion.div>
           </AnimatePresence>
         </div>

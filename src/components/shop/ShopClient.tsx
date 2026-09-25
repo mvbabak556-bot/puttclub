@@ -5,6 +5,7 @@ import Link from "next/link";
 import { AnimatePresence, motion } from "framer-motion";
 import { Check, ChevronDown, PackageSearch, RotateCcw, Search, SlidersHorizontal } from "lucide-react";
 import ProductCard from "@/components/ProductCard";
+import ShopGate from "@/components/shop/ShopGate";
 import { faNum, faPrice } from "@/lib/format";
 import type { ProductCardData } from "@/lib/types";
 
@@ -192,6 +193,7 @@ export default function ShopClient({
 
   return (
     <div className="mx-auto max-w-7xl px-4 pb-28 pt-28 sm:px-6 sm:pt-36 lg:px-8">
+      <ShopGate />
       {/* Head */}
       <div className="mb-12">
         <nav className="flex items-center gap-2 text-xs text-sage">

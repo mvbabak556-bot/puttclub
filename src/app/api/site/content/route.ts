@@ -7,15 +7,22 @@ import { mergeSiteSettings } from "@/lib/site-normalize";
 
 export const dynamic = "force-dynamic";
 
-/** تنظیمات عمومی سایت (برند، قالب، تماس، منو، متن‌ها) */
+/** تنظیمات عمومی سایت (برند، قالب، تماس، منو، متن‌ها) — رمز ورود مخفی فروشگاه هرگز عمومی نمی‌شود */
 export async function GET() {
   try {
     await bootstrapDatabase();
     const rows = await db.select().from(siteSettings);
     const obj: Record<string, unknown> = {};
     for (const r of rows) obj[r.key] = r.value;
-    return NextResponse.json({ settings: mergeSiteSettings(obj) });
+    const merged = mergeSiteSettings(obj);
+    const { code: _code, ...publicGate } = merged.shopGate;
+    void _code;
+    return NextResponse.json({ settings: { ...merged, shopGate: publicGate } });
   } catch {
-    return NextResponse.json({ settings: DEFAULT_SITE_SETTINGS });
+    const { code: _code, ...publicGate } = DEFAULT_SITE_SETTINGS.shopGate;
+    void _code;
+    return NextResponse.json({
+      settings: { ...DEFAULT_SITE_SETTINGS, shopGate: publicGate },
+    });
   }
 }
