@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { AnimatePresence, motion } from "framer-motion";
 import {
@@ -86,10 +86,50 @@ const FALLBACK: SiteCourse[] = [
   { id: 6, title: "عضویت باشگاه", subtitle: null, shortDesc: "عضویت در باشگاه پات کلاب با دسترسی به تمرین‌ها، رویدادها و تخفیف فروشگاه تجهیزات.", fullDesc: "", icon: "Medal", images: [], galleryMode: "featured", layout: "image-right", cardSize: "default", titleColor: null, textColor: null, accentColor: null, titleSize: "md", bodySize: "md", bodyAlign: "right", footerItems: [], socials: [], sortOrder: 6, isActive: true },
 ];
 
+/** نرمال‌سازی ردیف‌ها (محافظت در برابر کش قدیمی لوکال) */
+function normalize(rows: unknown): SiteCourse[] {
+  if (!Array.isArray(rows)) return [];
+  return rows
+    .filter((r): r is Record<string, unknown> => !!r && typeof r === "object")
+    .map((r, i) => ({
+      id: typeof r.id === "number" ? r.id : 1000 + i,
+      title: typeof r.title === "string" && r.title ? r.title : "دوره آموزشی",
+      subtitle: typeof r.subtitle === "string" ? r.subtitle : null,
+      shortDesc: typeof r.shortDesc === "string" ? r.shortDesc : "",
+      fullDesc: typeof r.fullDesc === "string" ? r.fullDesc : "",
+      icon: typeof r.icon === "string" && r.icon ? r.icon : "Sparkles",
+      images: Array.isArray(r.images) ? r.images.filter((x): x is string => typeof x === "string") : [],
+      galleryMode: r.galleryMode === "slider" || r.galleryMode === "grid" ? r.galleryMode : "featured",
+      layout: r.layout === "image-top" || r.layout === "image-left" ? r.layout : "image-right",
+      cardSize: r.cardSize === "compact" || r.cardSize === "large" ? r.cardSize : "default",
+      titleColor: typeof r.titleColor === "string" && r.titleColor ? r.titleColor : null,
+      textColor: typeof r.textColor === "string" && r.textColor ? r.textColor : null,
+      accentColor: typeof r.accentColor === "string" && r.accentColor ? r.accentColor : null,
+      titleSize: r.titleSize === "sm" || r.titleSize === "lg" || r.titleSize === "xl" ? r.titleSize : "md",
+      bodySize: r.bodySize === "sm" || r.bodySize === "lg" || r.bodySize === "xl" ? r.bodySize : "md",
+      bodyAlign: r.bodyAlign === "center" || r.bodyAlign === "justify" ? r.bodyAlign : "right",
+      footerItems: Array.isArray(r.footerItems)
+        ? r.footerItems.filter(
+            (f): f is { label: string; value: string } =>
+              !!f && typeof f === "object" && typeof (f as { label?: unknown }).label === "string"
+          )
+        : [],
+      socials: Array.isArray(r.socials)
+        ? r.socials.filter(
+            (s): s is CourseSocial =>
+              !!s && typeof s === "object" && typeof (s as { url?: unknown }).url === "string"
+          )
+        : [],
+      sortOrder: typeof r.sortOrder === "number" ? r.sortOrder : i + 1,
+      isActive: r.isActive !== false,
+    }));
+}
+
 export default function Programs() {
   const settings = useSiteSettings();
   const [courses, setCourses] = useState<SiteCourse[]>(FALLBACK);
   const [openId, setOpenId] = useState<number | null>(null);
+  const detailRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     let alive = true;
@@ -98,8 +138,9 @@ export default function Programs() {
         const res = await fetch(withBase("/api/site/courses"));
         if (res.ok) {
           const data = await res.json();
-          if (alive && data.courses?.length) {
-            setCourses(data.courses);
+          const rows = normalize(data.courses).filter((c) => c.isActive);
+          if (alive && rows.length) {
+            setCourses(rows);
             return;
           }
         }
@@ -110,14 +151,14 @@ export default function Programs() {
         const res = await fetch(withBase("/data/site-courses.json"));
         if (res.ok) {
           const data = await res.json();
-          let rows = (Array.isArray(data) ? data : []) as SiteCourse[];
+          let rows = normalize(data);
           try {
             const local = localStorage.getItem("puttclub_demo_site-courses");
-            if (local) rows = JSON.parse(local);
+            if (local) rows = normalize(JSON.parse(local));
           } catch {
             /* noop */
           }
-          rows = rows.filter((c) => c.isActive !== false);
+          rows = rows.filter((c) => c.isActive);
           if (alive && rows.length) setCourses(rows);
         }
       } catch {
@@ -129,12 +170,39 @@ export default function Programs() {
     };
   }, []);
 
+  // اگر دوره بازشده از لیست حذف شد، پنل بسته شود
+  useEffect(() => {
+    if (openId !== null && !courses.some((c) => c.id === openId)) {
+      setOpenId(null);
+    }
+  }, [courses, openId]);
+
+  // بستن با Escape
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setOpenId(null);
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, []);
+
   const open = courses.find((c) => c.id === openId) ?? null;
   const sec = settings.coursesSection;
 
-  const toggle = (id: number) => {
-    setOpenId((prev) => (prev === id ? null : id));
-  };
+  const toggle = useCallback((id: number) => {
+    setOpenId((prev) => {
+      const next = prev === id ? null : id;
+      // اسکرول نرم به پنل جزئیات وقتی باز می‌شود (پنل پایین گرید است)
+      if (next !== null) {
+        requestAnimationFrame(() => {
+          setTimeout(() => {
+            detailRef.current?.scrollIntoView({ behavior: "smooth", block: "nearest" });
+          }, 120);
+        });
+      }
+      return next;
+    });
+  }, []);
 
   return (
     <section id="programs" className="relative scroll-mt-24 py-24 sm:py-28">
@@ -169,13 +237,15 @@ export default function Programs() {
             return (
               <motion.button
                 key={c.id}
+                type="button"
                 initial={{ opacity: 0, y: 30 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true, margin: "-40px" }}
                 transition={{ duration: 0.6, delay: (i % 3) * 0.08 }}
                 onClick={() => toggle(c.id)}
                 aria-expanded={active}
-                className={`group relative block h-full w-full rounded-3xl border p-7 text-start transition-all duration-500 hover:-translate-y-1 ${
+                aria-controls="course-detail"
+                className={`group relative block h-full w-full cursor-pointer rounded-3xl border p-7 text-start transition-all duration-500 hover:-translate-y-1 ${
                   active
                     ? "border-gold-400/60 bg-forest-800 shadow-[0_20px_50px_-20px_rgba(201,162,75,0.4)]"
                     : "border-gold-500/10 bg-forest-900 hover:border-gold-500/30"
@@ -203,120 +273,131 @@ export default function Programs() {
                   }`}
                 >
                   {active ? "بستن جزئیات" : "دیدن جزئیات"}
-                  <ChevronDown size={14} className={`transition-transform ${active ? "rotate-180" : ""}`} />
+                  <ChevronDown size={14} className={`transition-transform duration-300 ${active ? "rotate-180" : ""}`} />
                 </span>
               </motion.button>
             );
           })}
         </div>
 
-        {/* پنل جزئیات — زیر کارت‌ها، بالای بنر فروشگاه */}
-        <AnimatePresence mode="wait">
-          {open && (
-            <motion.div
-              key={open.id}
-              initial={{ opacity: 0, height: 0 }}
-              animate={{ opacity: 1, height: "auto" }}
-              exit={{ opacity: 0, height: 0 }}
-              transition={{ duration: 0.45, ease: [0.22, 1, 0.36, 1] }}
-              className="overflow-hidden"
-            >
-              <div
-                className={`mt-6 overflow-hidden rounded-[2rem] border border-gold-500/25 bg-forest-900/80 shadow-2xl ${
-                  open.cardSize === "compact" ? "mx-auto max-w-3xl" : ""
-                } ${open.cardSize === "large" ? "lg:p-12" : "lg:p-10"} p-6 sm:p-8`}
+        {/* پنل جزئیات — زیر کارت‌ها، بالای بنر فروشگاه (بدون تغییر مسیر) */}
+        <div ref={detailRef} className="scroll-mt-28">
+          <AnimatePresence initial={false}>
+            {open && (
+              <motion.div
+                key="course-detail-panel"
+                id="course-detail"
+                initial={{ opacity: 0, height: 0 }}
+                animate={{ opacity: 1, height: "auto" }}
+                exit={{ opacity: 0, height: 0 }}
+                transition={{ duration: 0.45, ease: [0.22, 1, 0.36, 1] }}
+                className="overflow-hidden"
               >
-                <div className="flex items-start justify-between gap-4">
-                  <div>
-                    <p className="text-xs font-black tracking-[0.2em] text-gold-400">{open.subtitle || "جزئیات دوره"}</p>
-                    <h3
-                      className={`mt-2 font-black leading-snug ${TITLE_SIZE[open.titleSize] ?? TITLE_SIZE.md}`}
-                      style={open.titleColor ? { color: open.titleColor } : undefined}
-                    >
-                      {open.title}
-                    </h3>
-                  </div>
-                  <button
-                    onClick={() => setOpenId(null)}
-                    aria-label="بستن"
-                    className="grid size-10 shrink-0 place-items-center rounded-full border border-forest-600 text-sage transition-colors hover:border-gold-500/50 hover:text-gold-300"
+                <AnimatePresence mode="wait" initial={false}>
+                  <motion.div
+                    key={open.id}
+                    initial={{ opacity: 0, y: 16 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -12 }}
+                    transition={{ duration: 0.3 }}
+                    className={`mt-6 overflow-hidden rounded-[2rem] border border-gold-500/25 bg-forest-900/80 shadow-2xl ${
+                      open.cardSize === "compact" ? "mx-auto max-w-3xl" : ""
+                    } ${open.cardSize === "large" ? "lg:p-12" : "lg:p-10"} p-6 sm:p-8`}
                   >
-                    <X size={17} />
-                  </button>
-                </div>
-
-                <div
-                  className={`mt-6 grid gap-8 ${
-                    open.layout === "image-top" ? "grid-cols-1" : "grid-cols-1 lg:grid-cols-2"
-                  }`}
-                >
-                  {open.images.length > 0 && (
-                    <div className={open.layout === "image-left" ? "lg:order-2" : ""}>
-                      <CourseGallery images={open.images} mode={open.galleryMode} title={open.title} />
-                    </div>
-                  )}
-                  <div className={open.images.length === 0 ? "lg:col-span-2" : ""}>
-                    {open.fullDesc ? (
-                      <div
-                        className={`${BODY_SIZE[open.bodySize] ?? BODY_SIZE.md} whitespace-pre-line text-cream/85 ${
-                          open.bodyAlign === "center"
-                            ? "text-center"
-                            : open.bodyAlign === "justify"
-                              ? "text-justify"
-                              : ""
-                        }`}
-                        style={open.textColor ? { color: open.textColor } : undefined}
+                    <div className="flex items-start justify-between gap-4">
+                      <div>
+                        <p className="text-xs font-black tracking-[0.2em] text-gold-400">{open.subtitle || "جزئیات دوره"}</p>
+                        <h3
+                          className={`mt-2 font-black leading-snug ${TITLE_SIZE[open.titleSize] ?? TITLE_SIZE.md}`}
+                          style={open.titleColor ? { color: open.titleColor } : undefined}
+                        >
+                          {open.title}
+                        </h3>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => setOpenId(null)}
+                        aria-label="بستن جزئیات"
+                        className="grid size-10 shrink-0 place-items-center rounded-full border border-forest-600 text-sage transition-colors hover:border-gold-500/50 hover:text-gold-300"
                       >
-                        {open.fullDesc}
-                      </div>
-                    ) : (
-                      <p className="text-sm leading-8 text-sage">{open.shortDesc}</p>
-                    )}
+                        <X size={17} />
+                      </button>
+                    </div>
 
-                    {open.footerItems.length > 0 && (
-                      <ul className="mt-6 grid gap-2.5 sm:grid-cols-2">
-                        {open.footerItems.map((f, i) => (
-                          <li
-                            key={i}
-                            className="rounded-2xl border border-gold-500/10 bg-forest-950/60 px-4 py-3"
+                    <div
+                      className={`mt-6 grid gap-8 ${
+                        open.layout === "image-top" ? "grid-cols-1" : "grid-cols-1 lg:grid-cols-2"
+                      }`}
+                    >
+                      {open.images.length > 0 && (
+                        <div className={open.layout === "image-left" ? "lg:order-2" : ""}>
+                          <CourseGallery key={open.id} images={open.images} mode={open.galleryMode} title={open.title} />
+                        </div>
+                      )}
+                      <div className={open.images.length === 0 ? "lg:col-span-2" : ""}>
+                        {open.fullDesc ? (
+                          <div
+                            className={`${BODY_SIZE[open.bodySize] ?? BODY_SIZE.md} whitespace-pre-line text-cream/85 ${
+                              open.bodyAlign === "center"
+                                ? "text-center"
+                                : open.bodyAlign === "justify"
+                                  ? "text-justify"
+                                  : ""
+                            }`}
+                            style={open.textColor ? { color: open.textColor } : undefined}
                           >
-                            <span className="block text-[11px] text-sage">{f.label}</span>
-                            <span
-                              className="mt-1 block text-sm font-bold"
-                              style={open.accentColor ? { color: open.accentColor } : undefined}
-                            >
-                              {f.value}
-                            </span>
-                          </li>
-                        ))}
-                      </ul>
-                    )}
+                            {open.fullDesc}
+                          </div>
+                        ) : (
+                          <p className="text-sm leading-8 text-sage">{open.shortDesc}</p>
+                        )}
 
-                    {open.socials.length > 0 && (
-                      <div className="mt-6 flex flex-wrap items-center gap-2.5">
-                        {open.socials.map((s, i) => {
-                          const SIcon = SOCIAL_ICONS[s.network] ?? Globe;
-                          return (
-                            <a
-                              key={i}
-                              href={s.url}
-                              target={s.url.startsWith("http") ? "_blank" : undefined}
-                              rel={s.url.startsWith("http") ? "noreferrer" : undefined}
-                              className="inline-flex items-center gap-2 rounded-full border border-gold-500/25 px-4 py-2 text-xs font-bold text-gold-300 transition-all hover:border-gold-400 hover:bg-gold-500/10"
-                            >
-                              <SIcon size={14} />
-                              {s.label || SOCIAL_LABELS[s.network]}
-                            </a>
-                          );
-                        })}
+                        {open.footerItems.length > 0 && (
+                          <ul className="mt-6 grid gap-2.5 sm:grid-cols-2">
+                            {open.footerItems.map((f, i) => (
+                              <li
+                                key={i}
+                                className="rounded-2xl border border-gold-500/10 bg-forest-950/60 px-4 py-3"
+                              >
+                                <span className="block text-[11px] text-sage">{f.label}</span>
+                                <span
+                                  className="mt-1 block text-sm font-bold"
+                                  style={open.accentColor ? { color: open.accentColor } : undefined}
+                                >
+                                  {f.value}
+                                </span>
+                              </li>
+                            ))}
+                          </ul>
+                        )}
+
+                        {open.socials.length > 0 && (
+                          <div className="mt-6 flex flex-wrap items-center gap-2.5">
+                            {open.socials.map((s, i) => {
+                              const SIcon = SOCIAL_ICONS[s.network] ?? Globe;
+                              return (
+                                <a
+                                  key={i}
+                                  href={s.url}
+                                  target={s.url.startsWith("http") ? "_blank" : undefined}
+                                  rel={s.url.startsWith("http") ? "noreferrer" : undefined}
+                                  className="inline-flex items-center gap-2 rounded-full border border-gold-500/25 px-4 py-2 text-xs font-bold text-gold-300 transition-all hover:border-gold-400 hover:bg-gold-500/10"
+                                >
+                                  <SIcon size={14} />
+                                  {s.label || SOCIAL_LABELS[s.network]}
+                                </a>
+                              );
+                            })}
+                          </div>
+                        )}
                       </div>
-                    )}
-                  </div>
-                </div>
-              </div>
-            </motion.div>
-          )}
-        </AnimatePresence>
+                    </div>
+                  </motion.div>
+                </AnimatePresence>
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </div>
 
         <Reveal delay={0.1}>
           <Link
