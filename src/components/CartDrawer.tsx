@@ -8,6 +8,7 @@ import { ArrowLeft, Minus, Plus, ShoppingBag, Trash2, Truck, X } from "lucide-re
 import { useCartStore } from "@/lib/store";
 import { faNum, faPrice } from "@/lib/format";
 import { FREE_SHIPPING_THRESHOLD } from "@/lib/data";
+import { withBase } from "@/lib/public";
 
 export default function CartDrawer() {
   const { items, isOpen, close, remove, setQty } = useCartStore();
@@ -131,7 +132,7 @@ export default function CartDrawer() {
                           onClick={close}
                           className="relative size-20 shrink-0 overflow-hidden rounded-xl"
                         >
-                          <Image src={i.image} alt={i.name} fill className="object-cover" sizes="80px" />
+                          <Image src={withBase(i.image)} alt={i.name} fill className="object-cover" sizes="80px" />
                         </Link>
                         <div className="flex min-w-0 flex-1 flex-col">
                           <div className="flex items-start justify-between gap-2">

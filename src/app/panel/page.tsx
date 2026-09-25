@@ -209,7 +209,7 @@ export default function PanelPage() {
                         className="relative size-14 overflow-hidden rounded-xl border border-gold-500/10"
                         title={`${it.name} × ${faNum(it.qty)}`}
                       >
-                        <Image src={it.image} alt={it.name} fill sizes="56px" className="object-cover" />
+                        <Image src={withBase(it.image)} alt={it.name} fill sizes="56px" className="object-cover" />
                       </span>
                     ))}
                     {o.items.length > 4 && (

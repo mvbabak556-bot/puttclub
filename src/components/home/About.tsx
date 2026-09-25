@@ -3,6 +3,7 @@ import Link from "next/link";
 import { ArrowLeft, Camera, Flag, Mail, MapPin, Phone } from "lucide-react";
 import { Reveal } from "@/components/Motion";
 import { ACADEMY } from "@/lib/academy";
+import { withBase } from "@/lib/public";
 
 const INFO = [
   { icon: MapPin, label: "موقعیت", value: ACADEMY.address },
@@ -32,7 +33,7 @@ export default function About() {
               />
               <div className="relative overflow-hidden rounded-[2rem] border border-gold-500/25 bg-black shadow-2xl">
                 <Image
-                  src={ACADEMY.logo}
+                  src={withBase(ACADEMY.logo)}
                   alt="لوگوی آکادمی گلف پات کلاب"
                   width={520}
                   height={520}

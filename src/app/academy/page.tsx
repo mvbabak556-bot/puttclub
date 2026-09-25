@@ -6,6 +6,7 @@ import Link from "next/link";
 import { motion } from "framer-motion";
 import { ArrowRight, Flag, Loader2 } from "lucide-react";
 import { ACADEMY } from "@/lib/academy";
+import { withBase } from "@/lib/public";
 
 /**
  * صفحه ورود اعضای آکادمی — عمداً خالی نگه داشته شده تا پنل آکادمی
@@ -32,7 +33,7 @@ export default function AcademyEntryPage() {
         className="relative size-36 overflow-hidden rounded-3xl border border-gold-500/30 bg-black shadow-2xl sm:size-44"
       >
         <Image
-          src={ACADEMY.logo}
+          src={withBase(ACADEMY.logo)}
           alt="لوگوی آکادمی گلف پات کلاب"
           fill
           sizes="176px"

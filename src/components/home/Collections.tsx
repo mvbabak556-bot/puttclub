@@ -3,6 +3,7 @@ import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
 import { COLLECTIONS } from "@/lib/data";
 import { Reveal, Stagger, StaggerItem } from "@/components/Motion";
+import { withBase } from "@/lib/public";
 
 export default function Collections() {
   return (
@@ -45,7 +46,7 @@ export default function Collections() {
                 className="group relative block aspect-[3/4] overflow-hidden rounded-3xl border border-gold-500/10"
               >
                 <Image
-                  src={c.img}
+                  src={withBase(c.img)}
                   alt={c.title}
                   fill
                   sizes="(max-width:640px) 90vw, (max-width:1024px) 45vw, 24vw"

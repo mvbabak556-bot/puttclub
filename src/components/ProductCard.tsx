@@ -8,6 +8,7 @@ import Stars from "@/components/Stars";
 import { useCartStore } from "@/lib/store";
 import { discountPercent, faNum, faPrice } from "@/lib/format";
 import type { ProductCardData } from "@/lib/types";
+import { withBase } from "@/lib/public";
 
 export default function ProductCard({
   p,
@@ -35,7 +36,7 @@ export default function ProductCard({
         {/* Image */}
         <div className="relative aspect-[4/5] overflow-hidden bg-forest-850">
           <Image
-            src={p.image}
+            src={withBase(p.image)}
             alt={p.name}
             fill
             sizes="(max-width:640px) 90vw, (max-width:1024px) 45vw, 25vw"

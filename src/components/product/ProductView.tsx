@@ -18,6 +18,7 @@ import {
 import Stars from "@/components/Stars";
 import { useCartStore } from "@/lib/store";
 import { discountPercent, faNum, faPrice } from "@/lib/format";
+import { withBase } from "@/lib/public";
 
 export interface FullProduct {
   id: number;
@@ -74,7 +75,7 @@ export default function ProductView({ product: p }: { product: FullProduct }) {
               className="absolute inset-0"
             >
               <Image
-                src={p.images[active]}
+                src={withBase(p.images[active])}
                 alt={p.name}
                 fill
                 priority
@@ -106,7 +107,7 @@ export default function ProductView({ product: p }: { product: FullProduct }) {
                   : "border-transparent opacity-55 hover:opacity-90"
               }`}
             >
-              <Image src={img} alt="" fill sizes="120px" className="object-cover" />
+              <Image src={withBase(img)} alt="" fill sizes="120px" className="object-cover" />
             </button>
           ))}
         </div>

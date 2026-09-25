@@ -1,13 +1,14 @@
 import Image from "next/image";
 import Link from "next/link";
 import { ACADEMY } from "@/lib/academy";
+import { withBase } from "@/lib/public";
 
 export default function Logo() {
   return (
     <Link href="/" className="group flex items-center gap-3">
       <span className="relative size-11 shrink-0 overflow-hidden rounded-xl border border-gold-500/40 bg-black transition-colors group-hover:border-gold-400">
         <Image
-          src={ACADEMY.logo}
+          src={withBase(ACADEMY.logo)}
           alt="لوگوی آکادمی گلف پات کلاب"
           fill
           sizes="44px"

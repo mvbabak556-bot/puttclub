@@ -3,6 +3,7 @@ import Link from "next/link";
 import { Camera, Flag, Globe, Mail, MapPin, Phone } from "lucide-react";
 import { CATEGORIES } from "@/lib/data";
 import { ACADEMY } from "@/lib/academy";
+import { withBase } from "@/lib/public";
 
 export default function Footer() {
   return (
@@ -14,7 +15,7 @@ export default function Footer() {
             <Link href="/" className="flex items-center gap-3">
               <span className="relative size-14 shrink-0 overflow-hidden rounded-2xl border border-gold-500/40 bg-black">
                 <Image
-                  src={ACADEMY.logo}
+                  src={withBase(ACADEMY.logo)}
                   alt="لوگوی آکادمی گلف پات کلاب"
                   fill
                   sizes="56px"
