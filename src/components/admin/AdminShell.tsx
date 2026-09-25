@@ -134,6 +134,13 @@ export default function AdminShell() {
             </span>
             <div className="flex items-center gap-2">
               <Link
+                href="/admin/site"
+                aria-label="مدیریت سایت"
+                className="grid size-9 place-items-center rounded-full border border-gold-500/40 text-gold-300"
+              >
+                <Globe size={16} />
+              </Link>
+              <Link
                 href="/"
                 aria-label="مشاهده فروشگاه"
                 className="grid size-9 place-items-center rounded-full border border-forest-600 text-sage"

@@ -1,11 +1,13 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
+import Image from "next/image";
 import Link from "next/link";
 import { AnimatePresence, motion } from "framer-motion";
 import {
   ArrowLeft,
   Camera,
+  Check,
   ChevronDown,
   Crown,
   Flag,
@@ -77,13 +79,174 @@ const BODY_SIZE: Record<TextSize, string> = {
   xl: "text-lg leading-10",
 };
 
+function imgSrc(u: string) {
+  return u.startsWith("http") ? u : withBase(u);
+}
+
+/* محتوای پیش‌فرض غنی — تا وقتی دیتای پنل لود نشده، کارت‌ها کامل و خوشگل‌اند */
 const FALLBACK: SiteCourse[] = [
-  { id: 1, title: "آموزش مقدماتی", subtitle: null, shortDesc: "آشنایی با گریپ، استنس، پات و سوئینگ پایه؛ شروع درست برای کسانی که تازه وارد دنیای گلف شده‌اند.", fullDesc: "", icon: "Sparkles", images: [], galleryMode: "featured", layout: "image-right", cardSize: "default", titleColor: null, textColor: null, accentColor: null, titleSize: "md", bodySize: "md", bodyAlign: "right", footerItems: [], socials: [], sortOrder: 1, isActive: true },
-  { id: 2, title: "کلاس خصوصی", subtitle: null, shortDesc: "برنامه اختصاصی یک‌به‌یک با مربی؛ تحلیل سوئینگ و رفع ایرادهای تکنیکی در کوتاه‌ترین زمان.", fullDesc: "", icon: "Target", images: [], galleryMode: "featured", layout: "image-right", cardSize: "default", titleColor: null, textColor: null, accentColor: null, titleSize: "md", bodySize: "md", bodyAlign: "right", footerItems: [], socials: [], sortOrder: 2, isActive: true },
-  { id: 3, title: "گلف نوجوانان", subtitle: null, shortDesc: "دوره‌های شاد و اصولی برای نسل آینده گلف؛ آموزش پایه همراه با بازی و تمرین گروهی.", fullDesc: "", icon: "Flag", images: [], galleryMode: "featured", layout: "image-right", cardSize: "default", titleColor: null, textColor: null, accentColor: null, titleSize: "md", bodySize: "md", bodyAlign: "right", footerItems: [], socials: [], sortOrder: 3, isActive: true },
-  { id: 4, title: "تمرین در زمین", subtitle: null, shortDesc: "بازی آموزشی همراه مربی در زمین واقعی؛ مدیریت بازی، انتخاب چوب و استراتژی هر هول.", fullDesc: "", icon: "Timer", images: [], galleryMode: "featured", layout: "image-right", cardSize: "default", titleColor: null, textColor: null, accentColor: null, titleSize: "md", bodySize: "md", bodyAlign: "right", footerItems: [], socials: [], sortOrder: 4, isActive: true },
-  { id: 5, title: "آمادگی مسابقه", subtitle: null, shortDesc: "برنامه فشرده برای بازیکنان رقابتی؛ تمرین ذهنی، کنترل فشار و آمادگی تورنمنت.", fullDesc: "", icon: "Trophy", images: [], galleryMode: "featured", layout: "image-right", cardSize: "default", titleColor: null, textColor: null, accentColor: null, titleSize: "md", bodySize: "md", bodyAlign: "right", footerItems: [], socials: [], sortOrder: 5, isActive: true },
-  { id: 6, title: "عضویت باشگاه", subtitle: null, shortDesc: "عضویت در باشگاه پات کلاب با دسترسی به تمرین‌ها، رویدادها و تخفیف فروشگاه تجهیزات.", fullDesc: "", icon: "Medal", images: [], galleryMode: "featured", layout: "image-right", cardSize: "default", titleColor: null, textColor: null, accentColor: null, titleSize: "md", bodySize: "md", bodyAlign: "right", footerItems: [], socials: [], sortOrder: 6, isActive: true },
+  {
+    id: 1,
+    title: "آموزش مقدماتی",
+    subtitle: "شروع درست از روز اول",
+    shortDesc: "آشنایی با گریپ، استنس، پات و سوئینگ پایه؛ شروع درست برای کسانی که تازه وارد دنیای گلف شده‌اند.",
+    fullDesc:
+      "دوره مقدماتی پات کلاب برای کسانی طراحی شده که تا امروز چوب گلف دست نگرفته‌اند. در ۸ جلسه آموزشی با مفاهیم پایه آشنا می‌شوید: گرفتن صحیح چوب (گریپ)، ایستادن درست (استنس)، ضربه کوتاه (پات و چیپ) و سوئینگ پایه با آیرون‌های کوتاه.\n\nهر جلسه ۹۰ دقیقه است و همه تجهیزات لازم در اختیار شما قرار می‌گیرد؛ بدون نیاز به خرید اولیه. در پایان دوره، هنرجو می‌تواند یک دور ۹ هول تمرینی را با راهنمایی مربی کامل کند.",
+    icon: "Sparkles",
+    images: ["/images/academy-about.jpg", "/images/products/balls.jpg", "/images/products/glove.jpg"],
+    galleryMode: "featured",
+    layout: "image-right",
+    cardSize: "default",
+    titleColor: null,
+    textColor: null,
+    accentColor: null,
+    titleSize: "md",
+    bodySize: "md",
+    bodyAlign: "right",
+    footerItems: [
+      { label: "تعداد جلسات", value: "۸ جلسه ۹۰ دقیقه‌ای" },
+      { label: "سطح", value: "صفر تا پایه" },
+      { label: "پیش‌نیاز", value: "ندارد — تجهیزات با آکادمی" },
+    ],
+    socials: [],
+    sortOrder: 1,
+    isActive: true,
+  },
+  {
+    id: 2,
+    title: "کلاس خصوصی",
+    subtitle: "یک‌به‌یک با مربی",
+    shortDesc: "برنامه اختصاصی یک‌به‌یک با مربی؛ تحلیل سوئینگ و رفع ایرادهای تکنیکی در کوتاه‌ترین زمان.",
+    fullDesc:
+      "در کلاس خصوصی، تمام توجه مربی فقط به شماست. ابتدا سوئینگ شما با فیلم‌برداری فریم‌به‌فریم تحلیل می‌شود و سپس یک برنامه تمرینی کاملاً شخصی بر اساس نقاط قوت و ضعف شما نوشته می‌شود.\n\nاین دوره برای کسانی مناسب است که زمان محدود دارند یا روی یک ایراد خاص (مثل اسلایس، فاصله کوتاه یا پات ناپایدار) می‌خواهند تمرکز کنند. ساعت کلاس‌ها با هماهنگی شما و به‌صورت منعطف برگزار می‌شود.",
+    icon: "Target",
+    images: ["/images/products/driver.jpg", "/images/products/rangefinder.jpg"],
+    galleryMode: "slider",
+    layout: "image-left",
+    cardSize: "default",
+    titleColor: null,
+    textColor: null,
+    accentColor: null,
+    titleSize: "md",
+    bodySize: "md",
+    bodyAlign: "right",
+    footerItems: [
+      { label: "مدت هر جلسه", value: "۶۰ دقیقه" },
+      { label: "تحلیل", value: "فیلم فریم‌به‌فریم سوئینگ" },
+      { label: "زمان‌بندی", value: "منعطف با هماهنگی" },
+    ],
+    socials: [],
+    sortOrder: 2,
+    isActive: true,
+  },
+  {
+    id: 3,
+    title: "گلف نوجوانان",
+    subtitle: "نسل آینده گلف",
+    shortDesc: "دوره‌های شاد و اصولی برای نسل آینده گلف؛ آموزش پایه همراه با بازی و تمرین گروهی.",
+    fullDesc:
+      "باشگاه نوجوانان پات کلاب برای سنین ۷ تا ۱۵ سال طراحی شده است. آموزش در قالب بازی، مسابقه‌های دوستانه و تمرین گروهی انجام می‌شود تا بچه‌ها هم تکنیک یاد بگیرند و هم عاشق گلف شوند.\n\nچوب‌های مخصوص سنین پایین، توپ‌های تمرینی نرم و محیط امن زمین تمرینی، تجربه‌ای شاد و بدون استرس می‌سازد. والدین می‌توانند از جایگاه تماشا، پیشرفت فرزندشان را دنبال کنند.",
+    icon: "Flag",
+    images: ["/images/academy-about.jpg", "/images/products/balls.jpg", "/images/products/glove.jpg"],
+    galleryMode: "grid",
+    layout: "image-top",
+    cardSize: "default",
+    titleColor: null,
+    textColor: null,
+    accentColor: null,
+    titleSize: "md",
+    bodySize: "md",
+    bodyAlign: "right",
+    footerItems: [
+      { label: "رده سنی", value: "۷ تا ۱۵ سال" },
+      { label: "شیوه", value: "گروهی + بازی" },
+      { label: "تجهیزات", value: "مخصوص سنین پایین با آکادمی" },
+    ],
+    socials: [],
+    sortOrder: 3,
+    isActive: true,
+  },
+  {
+    id: 4,
+    title: "تمرین در زمین",
+    subtitle: "بازی واقعی با مربی",
+    shortDesc: "بازی آموزشی همراه مربی در زمین واقعی؛ مدیریت بازی، انتخاب چوب و استراتژی هر هول.",
+    fullDesc:
+      "فرق تمرین در رنج با بازی در زمین، مثل فرق کلاس زبان با سفر خارجی است! در این دوره همراه مربی وارد زمین واقعی می‌شوید و روی مهارت‌هایی کار می‌کنید که فقط در بازی واقعی یاد گرفته می‌شوند: مدیریت بازی، انتخاب هوشمندانه چوب، خواندن شیب گرین و تصمیم‌گیری زیر فشار.\n\nهر جلسه شامل بازی ۹ هول همراه با مربی است و بعد از بازی، نکات کلیدی هر هول با شما مرور می‌شود.",
+    icon: "Timer",
+    images: ["/images/products/bag.jpg", "/images/products/umbrella.jpg"],
+    galleryMode: "featured",
+    layout: "image-right",
+    cardSize: "default",
+    titleColor: null,
+    textColor: null,
+    accentColor: null,
+    titleSize: "md",
+    bodySize: "md",
+    bodyAlign: "right",
+    footerItems: [
+      { label: "فرمت", value: "۹ هول با مربی" },
+      { label: "سطح", value: "متوسط به بالا" },
+      { label: "همراه", value: "تحلیل هول‌به‌هول پس از بازی" },
+    ],
+    socials: [],
+    sortOrder: 4,
+    isActive: true,
+  },
+  {
+    id: 5,
+    title: "آمادگی مسابقه",
+    subtitle: "برای سکوی قهرمانی",
+    shortDesc: "برنامه فشرده برای بازیکنان رقابتی؛ تمرین ذهنی، کنترل فشار و آمادگی تورنمنت.",
+    fullDesc:
+      "اگر قرار است در مسابقات استانی یا کشوری شرکت کنید، این دوره برای شماست. برنامه فشرده ۶ هفته‌ای شامل تمرین تکنیکی روزانه، شبیه‌سازی شرایط مسابقه، تمرین ذهنی و مدیریت استرس روز تورنمنت است.\n\nمربیان ما سابقه همراهی بازیکنان در مسابقات رسمی را دارند و در روز مسابقه هم کنار شما خواهند بود. ظرفیت هر دوره محدود به ۶ بازیکن است.",
+    icon: "Trophy",
+    images: ["/images/products/irons.jpg", "/images/products/putter.jpg", "/images/products/shoes.jpg"],
+    galleryMode: "slider",
+    layout: "image-left",
+    cardSize: "large",
+    titleColor: null,
+    textColor: null,
+    accentColor: null,
+    titleSize: "lg",
+    bodySize: "md",
+    bodyAlign: "right",
+    footerItems: [
+      { label: "مدت دوره", value: "۶ هفته فشرده" },
+      { label: "ظرفیت", value: "فقط ۶ بازیکن" },
+      { label: "همراهی", value: "حضور مربی در روز مسابقه" },
+    ],
+    socials: [],
+    sortOrder: 5,
+    isActive: true,
+  },
+  {
+    id: 6,
+    title: "عضویت باشگاه",
+    subtitle: "خانواده پات کلاب",
+    shortDesc: "عضویت در باشگاه پات کلاب با دسترسی به تمرین‌ها، رویدادها و تخفیف فروشگاه تجهیزات.",
+    fullDesc:
+      "با عضویت در باشگاه پات کلاب، بخشی از یک خانواده گلفی می‌شوید: دسترسی نامحدود به زمین تمرینی در ساعات باشگاه، شرکت در تورنمنت‌های داخلی ماهانه، تخفیف ویژه فروشگاه تجهیزات و دعوت به رویدادها و دورهمی‌های باشگاه.\n\nعضویت در سه طرح ماهانه، فصلی و سالانه ارائه می‌شود و برای هنرجویان دوره‌های آموزشی، ماه اول با تخفیف ویژه محاسبه می‌شود.",
+    icon: "Medal",
+    images: ["/images/products/polo.jpg", "/images/products/shoes.jpg"],
+    galleryMode: "grid",
+    layout: "image-top",
+    cardSize: "default",
+    titleColor: null,
+    textColor: null,
+    accentColor: null,
+    titleSize: "md",
+    bodySize: "md",
+    bodyAlign: "right",
+    footerItems: [
+      { label: "طرح‌ها", value: "ماهانه / فصلی / سالانه" },
+      { label: "مزایا", value: "تورنمنت داخلی + تخفیف فروشگاه" },
+      { label: "هنرجویان", value: "ماه اول با تخفیف ویژه" },
+    ],
+    socials: [],
+    sortOrder: 6,
+    isActive: true,
+  },
 ];
 
 /** نرمال‌سازی ردیف‌ها (محافظت در برابر کش قدیمی لوکال) */
@@ -229,11 +392,12 @@ export default function Programs() {
           </Reveal>
         </div>
 
-        {/* کارت‌های دوره — با کلیک باز و بسته می‌شوند */}
+        {/* ۶ کارت دوره — با کلیک روی هرکدام، کادر جزئیات زیر گرید باز می‌شود */}
         <div className="mt-12 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
           {courses.map((c, i) => {
             const Icon = ICONS[c.icon] ?? Sparkles;
             const active = openId === c.id;
+            const cover = c.images[0];
             return (
               <motion.button
                 key={c.id}
@@ -245,35 +409,73 @@ export default function Programs() {
                 onClick={() => toggle(c.id)}
                 aria-expanded={active}
                 aria-controls="course-detail"
-                className={`group relative block h-full w-full cursor-pointer rounded-3xl border p-7 text-start transition-all duration-500 hover:-translate-y-1 ${
+                className={`group relative block h-full w-full cursor-pointer overflow-hidden rounded-3xl border text-start transition-all duration-500 hover:-translate-y-1 ${
                   active
-                    ? "border-gold-400/60 bg-forest-800 shadow-[0_20px_50px_-20px_rgba(201,162,75,0.4)]"
-                    : "border-gold-500/10 bg-forest-900 hover:border-gold-500/30"
+                    ? "border-gold-400/70 bg-forest-800 shadow-[0_24px_60px_-20px_rgba(201,162,75,0.45)]"
+                    : "border-gold-500/10 bg-forest-900 hover:border-gold-500/35 hover:shadow-[0_20px_50px_-24px_rgba(201,162,75,0.35)]"
                 }`}
               >
-                <span
-                  className={`grid size-13 place-items-center rounded-2xl border transition-all duration-500 ${
-                    active
-                      ? "border-gold-400 bg-gold-500 text-forest-950"
-                      : "border-gold-500/25 bg-forest-800 text-gold-400 group-hover:bg-gold-500 group-hover:text-forest-950"
-                  }`}
-                >
-                  <Icon size={22} strokeWidth={1.7} />
+                {/* عکس کاور کارت */}
+                <span className="relative block aspect-[16/9] overflow-hidden">
+                  {cover ? (
+                    <Image
+                      src={imgSrc(cover)}
+                      alt={c.title}
+                      fill
+                      sizes="(max-width:640px) 90vw, (max-width:1024px) 45vw, 380px"
+                      className="object-cover transition-transform duration-700 group-hover:scale-105"
+                    />
+                  ) : (
+                    <span className="absolute inset-0 bg-gradient-to-br from-forest-700 via-forest-800 to-forest-950" />
+                  )}
+                  <span className="absolute inset-0 bg-gradient-to-t from-forest-950/85 via-forest-950/20 to-transparent" />
+                  {/* آیکون شناور */}
+                  <span
+                    className={`absolute bottom-3 start-4 grid size-11 place-items-center rounded-xl border shadow-lg backdrop-blur transition-all duration-500 ${
+                      active
+                        ? "border-gold-400 bg-gold-500 text-forest-950"
+                        : "border-gold-500/40 bg-forest-950/80 text-gold-400 group-hover:bg-gold-500 group-hover:text-forest-950"
+                    }`}
+                  >
+                    <Icon size={20} strokeWidth={1.8} />
+                  </span>
+                  {c.images.length > 1 && (
+                    <span className="absolute end-3 top-3 rounded-full bg-forest-950/75 px-2.5 py-1 text-[10px] font-bold text-gold-300 backdrop-blur">
+                      {c.images.length} عکس
+                    </span>
+                  )}
+                  {active && (
+                    <span className="absolute end-3 bottom-3 inline-flex items-center gap-1 rounded-full bg-gold-500 px-2.5 py-1 text-[10px] font-black text-forest-950">
+                      <Check size={12} strokeWidth={3} />
+                      باز است
+                    </span>
+                  )}
                 </span>
-                <span className="mt-5 block text-lg font-black" style={c.titleColor ? { color: c.titleColor } : undefined}>
-                  {c.title}
-                </span>
-                {c.subtitle && (
-                  <span className="mt-1 block text-xs font-bold text-gold-400">{c.subtitle}</span>
-                )}
-                <span className="mt-2 block text-sm leading-7 text-sage">{c.shortDesc}</span>
-                <span
-                  className={`mt-4 inline-flex items-center gap-1.5 text-xs font-bold transition-colors ${
-                    active ? "text-gold-300" : "text-sage group-hover:text-gold-300"
-                  }`}
-                >
-                  {active ? "بستن جزئیات" : "دیدن جزئیات"}
-                  <ChevronDown size={14} className={`transition-transform duration-300 ${active ? "rotate-180" : ""}`} />
+
+                <span className="block p-6 pt-5">
+                  <span
+                    className="block text-lg font-black leading-snug"
+                    style={c.titleColor ? { color: c.titleColor } : undefined}
+                  >
+                    {c.title}
+                  </span>
+                  {c.subtitle && (
+                    <span className="mt-1 block text-xs font-bold text-gold-400">{c.subtitle}</span>
+                  )}
+                  <span className="mt-2.5 block text-sm leading-7 text-sage">{c.shortDesc}</span>
+                  <span
+                    className={`mt-4 inline-flex items-center gap-1.5 rounded-full border px-3.5 py-1.5 text-xs font-bold transition-all ${
+                      active
+                        ? "border-gold-400/60 bg-gold-500/15 text-gold-200"
+                        : "border-gold-500/20 text-sage group-hover:border-gold-500/40 group-hover:text-gold-300"
+                    }`}
+                  >
+                    {active ? "بستن جزئیات" : "دیدن جزئیات و عکس‌ها"}
+                    <ChevronDown
+                      size={14}
+                      className={`transition-transform duration-300 ${active ? "rotate-180" : ""}`}
+                    />
+                  </span>
                 </span>
               </motion.button>
             );
@@ -300,19 +502,34 @@ export default function Programs() {
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, y: -12 }}
                     transition={{ duration: 0.3 }}
-                    className={`mt-6 overflow-hidden rounded-[2rem] border border-gold-500/25 bg-forest-900/80 shadow-2xl ${
+                    className={`relative mt-6 overflow-hidden rounded-[2rem] border border-gold-500/25 bg-forest-900/80 shadow-2xl ${
                       open.cardSize === "compact" ? "mx-auto max-w-3xl" : ""
                     } ${open.cardSize === "large" ? "lg:p-12" : "lg:p-10"} p-6 sm:p-8`}
                   >
+                    {/* نوار طلایی بالای پنل */}
+                    <span
+                      aria-hidden
+                      className="absolute inset-x-0 top-0 h-1 bg-gradient-to-l from-transparent via-gold-500 to-transparent"
+                    />
                     <div className="flex items-start justify-between gap-4">
-                      <div>
-                        <p className="text-xs font-black tracking-[0.2em] text-gold-400">{open.subtitle || "جزئیات دوره"}</p>
-                        <h3
-                          className={`mt-2 font-black leading-snug ${TITLE_SIZE[open.titleSize] ?? TITLE_SIZE.md}`}
-                          style={open.titleColor ? { color: open.titleColor } : undefined}
-                        >
-                          {open.title}
-                        </h3>
+                      <div className="flex items-start gap-3.5">
+                        <span className="grid size-12 shrink-0 place-items-center rounded-2xl bg-gold-500 text-forest-950">
+                          {(() => {
+                            const DIcon = ICONS[open.icon] ?? Sparkles;
+                            return <DIcon size={22} strokeWidth={1.8} />;
+                          })()}
+                        </span>
+                        <div>
+                          <p className="text-xs font-black tracking-[0.2em] text-gold-400">
+                            {open.subtitle || "جزئیات دوره"}
+                          </p>
+                          <h3
+                            className={`mt-1.5 font-black leading-snug ${TITLE_SIZE[open.titleSize] ?? TITLE_SIZE.md}`}
+                            style={open.titleColor ? { color: open.titleColor } : undefined}
+                          >
+                            {open.title}
+                          </h3>
+                        </div>
                       </div>
                       <button
                         type="button"
@@ -390,6 +607,24 @@ export default function Programs() {
                             })}
                           </div>
                         )}
+
+                        {/* دکمه‌های اقدام */}
+                        <div className="mt-7 flex flex-wrap items-center gap-3 border-t border-gold-500/10 pt-6">
+                          <Link
+                            href="/academy"
+                            className="enter-members inline-flex items-center gap-2 rounded-full bg-gold-500 px-6 py-3 text-sm font-black text-forest-950 transition-colors hover:bg-gold-400"
+                          >
+                            <Flag size={15} />
+                            ثبت‌نام در این دوره
+                          </Link>
+                          <Link
+                            href="/shop"
+                            className="inline-flex items-center gap-2 rounded-full border border-gold-500/30 px-6 py-3 text-sm font-bold text-gold-300 transition-all hover:border-gold-400 hover:bg-gold-500/10"
+                          >
+                            <ShoppingBag size={15} />
+                            تجهیزات مرتبط
+                          </Link>
+                        </div>
                       </div>
                     </div>
                   </motion.div>

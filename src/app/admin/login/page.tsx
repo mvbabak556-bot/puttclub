@@ -18,11 +18,11 @@ export default function AdminLoginPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const dest = panel === "store" ? "/admin" : "/admin/site";
+  const [alreadyIn, setAlreadyIn] = useState(false);
 
   useEffect(() => {
-    if (getAdmin()) router.replace(dest);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [router]);
+    if (getAdmin()) setAlreadyIn(true);
+  }, []);
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -108,6 +108,28 @@ export default function AdminLoginPage() {
             </button>
           ))}
         </div>
+
+        {alreadyIn && (
+          <div className="mt-6 rounded-2xl border border-gold-500/25 bg-gold-500/10 p-4 text-center">
+            <p className="text-xs font-bold text-gold-300">شما وارد شده‌اید — مستقیم بروید به:</p>
+            <div className="mt-3 grid grid-cols-2 gap-2">
+              <Link
+                href="/admin"
+                className="inline-flex items-center justify-center gap-1.5 rounded-xl bg-gold-500 px-3 py-2.5 text-xs font-black text-forest-950 transition-colors hover:bg-gold-400"
+              >
+                <ShoppingBag size={14} />
+                پنل فروشگاه
+              </Link>
+              <Link
+                href="/admin/site"
+                className="inline-flex items-center justify-center gap-1.5 rounded-xl border border-gold-500/40 px-3 py-2.5 text-xs font-black text-gold-300 transition-colors hover:bg-gold-500/15"
+              >
+                <Globe size={14} />
+                پنل سایت
+              </Link>
+            </div>
+          </div>
+        )}
 
         <form onSubmit={submit} className="mt-6 space-y-4">
           <div className="relative">

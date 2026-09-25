@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { CheckCircle2, Eye, EyeOff, Loader2, Plus, Trash2 } from "lucide-react";
 import { adminFetch, isDemoResponse } from "@/lib/admin";
+import { withBase } from "@/lib/public";
 import { DEFAULT_SITE_SETTINGS, type MenuItem, type SiteSettings } from "@/lib/site-defaults";
 
 const inputCls =
@@ -21,7 +22,7 @@ function useAdminSettings() {
         setDemo(true);
         let obj: Record<string, unknown> = {};
         try {
-          const snap = await fetch("/data/site-settings.json");
+          const snap = await fetch(withBase("/data/site-settings.json"));
           if (snap.ok) {
             const arr = (await snap.json()) as { key: string; value: unknown }[];
             for (const row of arr) obj[row.key] = row.value;
