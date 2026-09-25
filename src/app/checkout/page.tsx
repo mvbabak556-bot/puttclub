@@ -21,6 +21,7 @@ import {
 import { useCartStore } from "@/lib/store";
 import { faNum, faPrice } from "@/lib/format";
 import { FREE_SHIPPING_THRESHOLD, SHIPPING_COST } from "@/lib/data";
+import { saveLocalOrder, withBase } from "@/lib/public";
 
 const CITIES = [
   "تهران",
@@ -102,14 +103,43 @@ export default function CheckoutPage() {
     setLoading(true);
     setError("");
     try {
-      const res = await fetch("/api/orders", {
+      const payload = { customer: form, items };
+      const res = await fetch(withBase("/api/orders"), {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ customer: form, items }),
+        body: JSON.stringify(payload),
       });
-      if (!res.ok) throw new Error();
-      const data = await res.json();
-      setOrderCode(data.code);
+      if (res.ok) {
+        const data = await res.json();
+        setOrderCode(data.code);
+      } else if (res.status === 404) {
+        const code = `PC-${Math.floor(100000 + Math.random() * 900000)}`;
+        let email = form.email.trim();
+        try {
+          const raw = localStorage.getItem("puttclub_user");
+          if (!email && raw) email = JSON.parse(raw).email || "";
+        } catch {
+          /* noop */
+        }
+        saveLocalOrder({
+          id: Date.now(),
+          code,
+          total,
+          status: "در حال پردازش",
+          createdAt: new Date().toISOString(),
+          email,
+          city: form.city,
+          items: items.map((i) => ({
+            productId: i.productId,
+            name: i.name,
+            qty: i.qty,
+            image: i.image,
+          })),
+        });
+        setOrderCode(code);
+      } else {
+        throw new Error();
+      }
       setStep(3);
       clear();
     } catch {

@@ -5,6 +5,7 @@ import Link from "next/link";
 import { motion, useScroll, useTransform } from "framer-motion";
 import { ArrowLeft, ChevronDown, Sparkles } from "lucide-react";
 import { STOCK } from "@/lib/data";
+import { withBase } from "@/lib/public";
 
 const EASE = [0.22, 1, 0.36, 1] as const;
 
@@ -51,7 +52,7 @@ export default function Hero() {
           playsInline
           poster={STOCK.courseDawn}
         >
-          <source src="/videos/golf-hero.mp4" type="video/mp4" />
+          <source src={withBase("/videos/golf-hero.mp4")} type="video/mp4" />
         </video>
       </motion.div>
       <div className="absolute inset-0 bg-gradient-to-b from-forest-950/85 via-forest-950/30 to-forest-950" />

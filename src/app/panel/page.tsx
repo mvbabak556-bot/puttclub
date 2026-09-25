@@ -17,6 +17,7 @@ import {
   User,
 } from "lucide-react";
 import { faDate, faNum, faPrice } from "@/lib/format";
+import { localOrders, withBase } from "@/lib/public";
 import type { SessionUser } from "@/lib/types";
 
 interface OrderView {
@@ -52,10 +53,18 @@ export default function PanelPage() {
       }
       const u = JSON.parse(raw) as SessionUser;
       setUser(u);
-      fetch(`/api/orders?email=${encodeURIComponent(u.email)}`)
-        .then((r) => r.json())
-        .then((d) => setOrders(d.orders ?? []))
-        .catch(() => setOrders([]))
+      setChecking(false);
+      const saved = localOrders(u.email);
+      fetch(withBase(`/api/orders?email=${encodeURIComponent(u.email)}`))
+        .then(async (r) => {
+          if (!r.ok) return saved;
+          const d = await r.json();
+          const remote = (d.orders ?? []) as OrderView[];
+          const ids = new Set(remote.map((o) => o.code));
+          return [...saved.filter((o) => !ids.has(o.code)), ...remote];
+        })
+        .then((list) => setOrders(list))
+        .catch(() => setOrders(saved))
         .finally(() => setLoading(false));
     } catch {
       router.replace("/login");

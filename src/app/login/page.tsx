@@ -7,6 +7,7 @@ import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
 import { Flag, Loader2, Lock, LogIn, Mail, Sparkles, UserPlus } from "lucide-react";
 import { STOCK } from "@/lib/data";
+import { localLogin, localRegister, withBase } from "@/lib/public";
 import type { SessionUser } from "@/lib/types";
 
 export default function LoginPage() {
@@ -33,13 +34,29 @@ export default function LoginPage() {
     setLoading(true);
     try {
       const endpoint = mode === "login" ? "/api/auth/login" : "/api/auth/register";
-      const body =
-        mode === "login" ? { email, password } : { name, email, password };
-      const res = await fetch(endpoint, {
+      const body = mode === "login" ? { email, password } : { name, email, password };
+      const res = await fetch(withBase(endpoint), {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(body),
       });
+      if (res.status === 404) {
+        const user =
+          mode === "login"
+            ? localLogin(email, password)
+            : localRegister(name, email, password);
+        if (!user) {
+          setError("ایمیل یا رمز عبور اشتباه است.");
+          return;
+        }
+        if (user === "exists") {
+          setError("این ایمیل قبلاً ثبت شده است.");
+          return;
+        }
+        localStorage.setItem("puttclub_user", JSON.stringify(user));
+        router.push("/panel");
+        return;
+      }
       const data = await res.json();
       if (!res.ok) {
         setError(data.error || "خطایی رخ داد. دوباره تلاش کنید.");

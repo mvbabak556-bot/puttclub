@@ -1,12 +1,13 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
 import { CheckCircle2, Loader2, PenLine, Quote, Star, User } from "lucide-react";
 import Stars from "@/components/Stars";
 import { Reveal } from "@/components/Motion";
 import { faDate, faNum } from "@/lib/format";
+import { localReviews, saveLocalReview, withBase } from "@/lib/public";
 import type { ReviewData } from "@/lib/types";
 
 export default function ReviewsSection({
@@ -22,6 +23,11 @@ export default function ReviewsSection({
 }) {
   const router = useRouter();
   const [reviews, setReviews] = useState<ReviewData[]>(initialReviews);
+
+  useEffect(() => {
+    const extra = localReviews(productId).filter((r) => !initialReviews.some((i) => i.id === r.id));
+    if (extra.length) setReviews((prev) => [...extra, ...prev]);
+  }, [productId, initialReviews]);
   const [name, setName] = useState("");
   const [text, setText] = useState("");
   const [stars, setStars] = useState(5);
@@ -47,19 +53,33 @@ export default function ReviewsSection({
     }
     setLoading(true);
     try {
-      const res = await fetch("/api/reviews", {
+      const review = {
+        id: Date.now(),
+        productId,
+        author: name.trim(),
+        rating: stars,
+        comment: text.trim(),
+        createdAt: new Date().toISOString(),
+      };
+      const res = await fetch(withBase("/api/reviews"), {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ productId, author: name.trim(), rating: stars, comment: text.trim() }),
+        body: JSON.stringify(review),
       });
-      if (!res.ok) throw new Error();
-      const data = await res.json();
-      setReviews((prev) => [data.review, ...prev]);
+      if (res.ok) {
+        const data = await res.json();
+        setReviews((prev) => [data.review, ...prev]);
+        router.refresh();
+      } else if (res.status === 404) {
+        saveLocalReview(review);
+        setReviews((prev) => [review, ...prev]);
+      } else {
+        throw new Error();
+      }
       setDone(true);
       setName("");
       setText("");
       setStars(5);
-      router.refresh();
       setTimeout(() => setDone(false), 4000);
     } catch {
       setError("ثبت دیدگاه با خطا مواجه شد. دوباره تلاش کنید.");

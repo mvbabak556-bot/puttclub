@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { AnimatePresence, motion } from "framer-motion";
 import { Check, ChevronDown, PackageSearch, RotateCcw, Search, SlidersHorizontal } from "lucide-react";
@@ -34,6 +34,11 @@ export default function ShopClient({
   const [inStock, setInStock] = useState(false);
   const [q, setQ] = useState("");
   const [filtersOpen, setFiltersOpen] = useState(false);
+
+  useEffect(() => {
+    const cat = new URLSearchParams(window.location.search).get("cat");
+    if (cat) setCats((prev) => (prev.includes(cat) ? prev : [cat]));
+  }, []);
 
   const allCats = useMemo(() => {
     const map = new Map<string, number>();
