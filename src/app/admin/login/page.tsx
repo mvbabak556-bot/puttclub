@@ -47,7 +47,7 @@ export default function AdminLoginPage() {
           password === DEMO_ADMIN.password
         ) {
           setAdmin({ id: 0, name: DEMO_ADMIN.name, email: DEMO_ADMIN.email });
-          router.push("/admin");
+          router.push(dest);
           return;
         }
         setError("نام کاربری یا رمز عبور اشتباه است.");
@@ -59,7 +59,7 @@ export default function AdminLoginPage() {
         return;
       }
       setAdmin(data.user);
-      router.push("/admin");
+      router.push(dest);
     } catch {
       setError("ارتباط با سرور برقرار نشد.");
     } finally {
