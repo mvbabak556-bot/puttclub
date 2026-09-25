@@ -4,19 +4,24 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
-import { Flag, Loader2, Lock, ShieldCheck, User } from "lucide-react";
+import { Flag, Globe, Loader2, Lock, ShieldCheck, ShoppingBag, User } from "lucide-react";
 import { DEMO_ADMIN, getAdmin, setAdmin } from "@/lib/admin";
 import { withBase } from "@/lib/public";
 
+type Panel = "store" | "site";
+
 export default function AdminLoginPage() {
   const router = useRouter();
+  const [panel, setPanel] = useState<Panel>("store");
   const [identifier, setIdentifier] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const dest = panel === "store" ? "/admin" : "/admin/site";
 
   useEffect(() => {
-    if (getAdmin()) router.replace("/admin");
+    if (getAdmin()) router.replace(dest);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [router]);
 
   const submit = async (e: React.FormEvent) => {
@@ -42,7 +47,7 @@ export default function AdminLoginPage() {
           password === DEMO_ADMIN.password
         ) {
           setAdmin({ id: 0, name: DEMO_ADMIN.name, email: DEMO_ADMIN.email });
-          router.push("/admin");
+          router.push(dest);
           return;
         }
         setError("نام کاربری یا رمز عبور اشتباه است.");
@@ -54,7 +59,7 @@ export default function AdminLoginPage() {
         return;
       }
       setAdmin(data.user);
-      router.push("/admin");
+      router.push(dest);
     } catch {
       setError("ارتباط با سرور برقرار نشد.");
     } finally {
@@ -78,12 +83,33 @@ export default function AdminLoginPage() {
             <ShieldCheck size={24} />
           </span>
           <div>
-            <h1 className="text-xl font-black">ورود مدیر فروشگاه</h1>
+            <h1 className="text-xl font-black">ورود مدیران</h1>
             <p className="mt-1 text-xs text-sage">داشبورد مدیریتی پات‌کلاب</p>
           </div>
         </div>
 
-        <form onSubmit={submit} className="mt-8 space-y-4">
+        <div className="mt-8 grid grid-cols-2 gap-2 rounded-2xl border border-gold-500/15 bg-forest-950/60 p-1.5">
+          {(
+            [
+              { key: "store", label: "پنل فروشگاه", icon: ShoppingBag },
+              { key: "site", label: "پنل سایت", icon: Globe },
+            ] as const
+          ).map((p) => (
+            <button
+              key={p.key}
+              type="button"
+              onClick={() => setPanel(p.key)}
+              className={`flex items-center justify-center gap-2 rounded-xl px-4 py-3 text-sm font-black transition-all ${
+                panel === p.key ? "bg-gold-500 text-forest-950" : "text-sage hover:text-gold-300"
+              }`}
+            >
+              <p.icon size={16} />
+              {p.label}
+            </button>
+          ))}
+        </div>
+
+        <form onSubmit={submit} className="mt-6 space-y-4">
           <div className="relative">
             <User size={16} className="absolute start-4 top-1/2 -translate-y-1/2 text-sage" />
             <input
