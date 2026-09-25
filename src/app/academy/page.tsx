@@ -33,7 +33,7 @@ export default function AcademyEntryPage() {
         className="relative size-36 overflow-hidden rounded-3xl border border-gold-500/30 bg-white p-2 shadow-2xl sm:size-44"
       >
         <Image
-          src={withBase(ACADEMY.logo)}
+          src={withBase(ACADEMY.logoHd)}
           alt="لوگوی آکادمی گلف پات کلاب"
           fill
           sizes="176px"

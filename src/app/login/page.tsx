@@ -35,12 +35,18 @@ export default function LoginPage() {
     try {
       const endpoint = mode === "login" ? "/api/auth/login" : "/api/auth/register";
       const body = mode === "login" ? { email, password } : { name, email, password };
-      const res = await fetch(withBase(endpoint), {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(body),
-      });
-      if (res.status === 404) {
+      let res: Response | null = null;
+      try {
+        res = await fetch(withBase(endpoint), {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(body),
+        });
+      } catch {
+        res = null; // بدون سرور (نسخه استاتیک) — ورود محلی
+      }
+      // هاست استاتیک (404/405) یا قطعی شبکه — ورود/ثبت‌نام محلی
+      if (!res || res.status === 404 || res.status === 405) {
         const user =
           mode === "login"
             ? localLogin(email, password)
@@ -57,7 +63,12 @@ export default function LoginPage() {
         router.push("/panel");
         return;
       }
-      const data = await res.json();
+      let data: { error?: string; user?: SessionUser } = {};
+      try {
+        data = await res.json();
+      } catch {
+        data = {};
+      }
       if (!res.ok) {
         setError(data.error || "خطایی رخ داد. دوباره تلاش کنید.");
         return;

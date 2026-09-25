@@ -13,6 +13,8 @@ export const ACADEMY = {
   instagram: "Puttclub.Golfacademy",
   instagramUrl: "https://www.instagram.com/Puttclub.Golfacademy",
   logo: "/images/academy-logo.jpg",
+  /** رندر باکیفیت‌تر همان لوگوی رسمی برای نمایش‌های بزرگ (طرح بدون تغییر) */
+  logoHd: "/images/academy-logo-hd.jpg",
   /** آدرس پنل آکادمی که جداگانه در حال ساخت است؛ وقتی آماده شد فقط همین مقدار ست می‌شود */
   panelUrl: process.env.NEXT_PUBLIC_ACADEMY_PANEL_URL || "",
 };

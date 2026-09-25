@@ -451,13 +451,15 @@ const PRODUCTS = [
   },
 ];
 
-async function main() {
+export async function seedDatabase(reset = true) {
   console.log("Seeding PuttClub database...");
 
-  await db.delete(reviews);
-  await db.delete(orders);
-  await db.delete(products);
-  await db.delete(users);
+  if (reset) {
+    await db.delete(reviews);
+    await db.delete(orders);
+    await db.delete(products);
+    await db.delete(users);
+  }
 
   for (const p of PRODUCTS) {
     const { reviews: productReviews, ...data } = p;
@@ -488,10 +490,16 @@ async function main() {
   });
 
   console.log("✓ Seed complete: 10 محصولات، دیدگاه‌ها و حساب نمونه (demo@puttclub.ir)");
-  process.exit(0);
 }
 
-main().catch((e) => {
-  console.error(e);
-  process.exit(1);
-});
+// فقط وقتی مستقیم با CLI اجرا شود (npx tsx src/db/seed.ts) — نه هنگام ایمپورت
+const isCli =
+  process.argv[1]?.endsWith("seed.ts") || process.argv[1]?.endsWith("seed-cli.ts");
+if (isCli) {
+  seedDatabase(true)
+    .then(() => process.exit(0))
+    .catch((e) => {
+      console.error(e);
+      process.exit(1);
+    });
+}

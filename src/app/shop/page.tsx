@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { db } from "@/db";
 import { products } from "@/db/schema";
 import { toCardData, type ProductCardData } from "@/lib/types";
+import { bootstrapDatabase } from "@/db/bootstrap";
 import ShopClient from "@/components/shop/ShopClient";
 
 export const dynamic = "force-dynamic";
@@ -19,6 +20,7 @@ export default async function ShopPage({
   const { cat } = await searchParams;
   let items: ProductCardData[] = [];
   try {
+    await bootstrapDatabase();
     const rows = await db.select().from(products);
     items = rows.map(toCardData);
   } catch {

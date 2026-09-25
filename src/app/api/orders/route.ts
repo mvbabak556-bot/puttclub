@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { desc, eq, inArray } from "drizzle-orm";
 import { db } from "@/db";
 import { orders, products, type OrderItem } from "@/db/schema";
+import { bootstrapDatabase } from "@/db/bootstrap";
 import { FREE_SHIPPING_THRESHOLD, SHIPPING_COST } from "@/lib/data";
 
 export const dynamic = "force-dynamic";
@@ -10,6 +11,7 @@ export async function GET(req: Request) {
   const email = new URL(req.url).searchParams.get("email");
   if (!email) return NextResponse.json({ orders: [] });
   try {
+    await bootstrapDatabase();
     const rows = await db
       .select()
       .from(orders)
@@ -23,6 +25,7 @@ export async function GET(req: Request) {
 
 export async function POST(req: Request) {
   try {
+    await bootstrapDatabase();
     const body = await req.json();
     const customer = body.customer ?? {};
     const items: { productId: number; qty: number }[] = body.items ?? [];

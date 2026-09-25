@@ -81,12 +81,19 @@ export default function CheckoutPage() {
   const set = (k: keyof Form) => (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) =>
     setForm((f) => ({ ...f, [k]: e.target.value }));
 
+  // ارقام فارسی/عربی را به انگلیسی تبدیل می‌کند تا اعتبارسنجی درست کار کند
+  const toEn = (s: string) =>
+    s.replace(/[۰-۹]/g, (d) => String("۰۱۲۳۴۵۶۷۸۹".indexOf(d))).replace(/[٠-٩]/g, (d) => String("٠١٢٣٤٥٦٧٨٩".indexOf(d)));
+
   const validateStep0 = () => {
     if (form.name.trim().length < 3) return "نام و نام خانوادگی را کامل وارد کنید.";
-    if (!/^09\d{9}$/.test(form.phone.trim())) return "شماره موبایل معتبر نیست (مثل ۰۹۱۲۳۴۵۶۷۸۹).";
-    if (form.email && !/^\S+@\S+\.\S+$/.test(form.email.trim())) return "ایمیل معتبر نیست.";
+    if (!/^09\d{9}$/.test(toEn(form.phone.trim())))
+      return "شماره موبایل معتبر نیست (مثل ۰۹۱۲۳۴۵۶۷۸۹).";
+    if (form.email.trim() && !/^\S+@\S+\.\S+$/.test(form.email.trim()))
+      return "ایمیل معتبر نیست.";
     if (form.address.trim().length < 10) return "آدرس را کامل‌تر وارد کنید.";
-    if (form.postalCode && !/^\d{10}$/.test(form.postalCode.trim())) return "کد پستی باید ۱۰ رقم باشد.";
+    if (form.postalCode.trim() && !/^\d{10}$/.test(toEn(form.postalCode.trim())))
+      return "کد پستی باید ۱۰ رقم باشد.";
     return "";
   };
 
@@ -103,16 +110,38 @@ export default function CheckoutPage() {
     setLoading(true);
     setError("");
     try {
-      const payload = { customer: form, items };
-      const res = await fetch(withBase("/api/orders"), {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
-      });
-      if (res.ok) {
+      const customer = {
+        ...form,
+        phone: toEn(form.phone.trim()),
+        postalCode: toEn(form.postalCode.trim()),
+      };
+      const payload = { customer, items };
+      let res: Response | null = null;
+      try {
+        res = await fetch(withBase("/api/orders"), {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload),
+        });
+      } catch {
+        res = null; // بدون سرور (نسخه استاتیک) — سفارش محلی ثبت می‌شود
+      }
+      if (res && res.ok) {
         const data = await res.json();
         setOrderCode(data.code);
-      } else if (res.status === 404) {
+      } else if (res && res.status >= 400 && res.status < 500 && res.status !== 404 && res.status !== 405) {
+        // خطای واقعی اعتبارسنجی از سمت سرور
+        let msg = "ثبت سفارش با خطا مواجه شد. لطفاً دوباره تلاش کنید.";
+        try {
+          const data = await res.json();
+          if (data?.error) msg = data.error;
+        } catch {
+          /* noop */
+        }
+        setError(msg);
+        return;
+      } else {
+        // هاست استاتیک (404/405) یا قطعی شبکه — ثبت سفارش محلی
         const code = `PC-${Math.floor(100000 + Math.random() * 900000)}`;
         let email = form.email.trim();
         try {
@@ -137,8 +166,6 @@ export default function CheckoutPage() {
           })),
         });
         setOrderCode(code);
-      } else {
-        throw new Error();
       }
       setStep(3);
       clear();

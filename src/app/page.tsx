@@ -2,6 +2,7 @@ import { desc, eq } from "drizzle-orm";
 import { db } from "@/db";
 import { products } from "@/db/schema";
 import { toCardData, type ProductCardData } from "@/lib/types";
+import { bootstrapDatabase } from "@/db/bootstrap";
 import Hero from "@/components/home/Hero";
 import Marquee from "@/components/home/Marquee";
 import About from "@/components/home/About";
@@ -17,6 +18,7 @@ export const dynamic = "force-dynamic";
 
 async function getFeatured(): Promise<ProductCardData[]> {
   try {
+    await bootstrapDatabase();
     const featured = await db
       .select()
       .from(products)

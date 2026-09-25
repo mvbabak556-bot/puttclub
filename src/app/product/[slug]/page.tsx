@@ -6,6 +6,7 @@ import { ChevronLeft } from "lucide-react";
 import { db } from "@/db";
 import { products, reviews } from "@/db/schema";
 import { toCardData, toReviewData } from "@/lib/types";
+import { bootstrapDatabase } from "@/db/bootstrap";
 import ProductView from "@/components/product/ProductView";
 import ReviewsSection from "@/components/product/ReviewsSection";
 import ProductCard from "@/components/ProductCard";
@@ -14,6 +15,7 @@ export const dynamic = "force-dynamic";
 
 async function getData(slug: string) {
   try {
+    await bootstrapDatabase();
     const [p] = await db.select().from(products).where(eq(products.slug, slug));
     if (!p) return null;
     const revs = await db

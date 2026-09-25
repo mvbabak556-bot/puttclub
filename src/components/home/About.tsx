@@ -33,10 +33,10 @@ export default function About() {
               />
               <div className="relative overflow-hidden rounded-[2rem] border border-gold-500/25 bg-white p-3 shadow-2xl sm:p-4">
                 <Image
-                  src={withBase(ACADEMY.logo)}
+                  src={withBase(ACADEMY.logoHd)}
                   alt="لوگوی آکادمی گلف پات کلاب"
-                  width={520}
-                  height={520}
+                  width={1024}
+                  height={1024}
                   sizes="(max-width:1024px) 90vw, 480px"
                   className="h-auto w-full max-w-md object-contain"
                   priority={false}

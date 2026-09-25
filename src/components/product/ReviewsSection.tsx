@@ -61,20 +61,34 @@ export default function ReviewsSection({
         comment: text.trim(),
         createdAt: new Date().toISOString(),
       };
-      const res = await fetch(withBase("/api/reviews"), {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(review),
-      });
-      if (res.ok) {
+      let res: Response | null = null;
+      try {
+        res = await fetch(withBase("/api/reviews"), {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(review),
+        });
+      } catch {
+        res = null; // بدون سرور (نسخه استاتیک) — دیدگاه محلی ثبت می‌شود
+      }
+      if (res && res.ok) {
         const data = await res.json();
         setReviews((prev) => [data.review, ...prev]);
         router.refresh();
-      } else if (res.status === 404) {
+      } else if (res && res.status === 400) {
+        let msg = "ثبت دیدگاه با خطا مواجه شد. دوباره تلاش کنید.";
+        try {
+          const data = await res.json();
+          if (data?.error) msg = data.error;
+        } catch {
+          /* noop */
+        }
+        setError(msg);
+        return;
+      } else {
+        // هاست استاتیک (404/405) یا قطعی شبکه — ثبت دیدگاه محلی
         saveLocalReview(review);
         setReviews((prev) => [review, ...prev]);
-      } else {
-        throw new Error();
       }
       setDone(true);
       setName("");

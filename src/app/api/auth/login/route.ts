@@ -3,6 +3,7 @@ import { createHash } from "crypto";
 import { eq } from "drizzle-orm";
 import { db } from "@/db";
 import { users } from "@/db/schema";
+import { bootstrapDatabase } from "@/db/bootstrap";
 
 export const dynamic = "force-dynamic";
 
@@ -10,6 +11,7 @@ const sha = (s: string) => createHash("sha256").update(s).digest("hex");
 
 export async function POST(req: Request) {
   try {
+    await bootstrapDatabase();
     const { email, password } = await req.json();
     if (!email || !password) {
       return NextResponse.json({ error: "ایمیل و رمز عبور الزامی است." }, { status: 400 });

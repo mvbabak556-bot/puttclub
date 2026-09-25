@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { eq } from "drizzle-orm";
 import { db } from "@/db";
 import { products, reviews } from "@/db/schema";
+import { bootstrapDatabase } from "@/db/bootstrap";
 
 export const dynamic = "force-dynamic";
 
@@ -18,6 +19,7 @@ export async function GET(req: Request) {
 
 export async function POST(req: Request) {
   try {
+    await bootstrapDatabase();
     const body = await req.json();
     const productId = Number(body.productId);
     const author = String(body.author ?? "").trim();

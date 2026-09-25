@@ -98,6 +98,7 @@ export default nextConfig;
       `export const dynamic = "force-static";
 
 export async function generateStaticParams() {
+  await bootstrapDatabase();
   const rows = await db.select({ slug: products.slug }).from(products);
   return rows.map((row) => ({ slug: row.slug }));
 }
