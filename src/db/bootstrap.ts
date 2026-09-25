@@ -1,6 +1,9 @@
-import { sql } from "drizzle-orm";
+import { createHash } from "crypto";
+import { eq, sql } from "drizzle-orm";
 import { db } from "./index";
-import { products } from "./schema";
+import { categories, products, users } from "./schema";
+
+const sha = (s: string) => createHash("sha256").update(s).digest("hex");
 
 /**
  * DDL همگام با src/db/schema.ts تا اپ روی دیتابیس تازه خودش جدول‌ها را
@@ -57,8 +60,17 @@ const DDL = [
     email text NOT NULL UNIQUE,
     password text NOT NULL,
     phone varchar(20),
+    role varchar(20) NOT NULL DEFAULT 'member',
     created_at timestamp NOT NULL DEFAULT now()
   )`,
+  `CREATE TABLE IF NOT EXISTS categories (
+    id serial PRIMARY KEY,
+    name varchar(60) NOT NULL UNIQUE,
+    description text,
+    image text,
+    created_at timestamp NOT NULL DEFAULT now()
+  )`,
+  `ALTER TABLE users ADD COLUMN IF NOT EXISTS role varchar(20) NOT NULL DEFAULT 'member'`,
 ];
 
 let pending: Promise<void> | null = null;
@@ -81,6 +93,30 @@ export function bootstrapDatabase(): Promise<void> {
           const { seedDatabase } = await import("./seed");
           await seedDatabase(false);
           console.log("[puttclub] demo catalogue seeded on fresh database");
+        }
+        // دسته‌بندی‌های پایه اگر نباشند
+        const [crow] = await db
+          .select({ n: sql<number>`count(*)::int` })
+          .from(categories);
+        if (!crow || crow.n === 0) {
+          const names = ["چوب‌ها", "توپ‌ها", "کیف‌ها", "کفش و دستکش", "پوشاک", "لوازم جانبی"];
+          await db.insert(categories).values(names.map((name) => ({ name })));
+          console.log("[puttclub] base categories seeded");
+        }
+        // کاربر مدیر اگر نباشد
+        const [admin] = await db
+          .select()
+          .from(users)
+          .where(eq(users.email, "admin@puttclub.ir"));
+        if (!admin) {
+          await db.insert(users).values({
+            name: "مدیر فروشگاه",
+            email: "admin@puttclub.ir",
+            password: sha("admin1234"),
+            phone: "09123456780",
+            role: "admin",
+          });
+          console.log("[puttclub] admin user seeded");
         }
       } catch (e) {
         console.error("[puttclub] bootstrap failed:", e);

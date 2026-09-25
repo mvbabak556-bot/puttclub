@@ -73,5 +73,14 @@ export const users = pgTable("users", {
   email: text("email").notNull().unique(),
   password: text("password").notNull(),
   phone: varchar("phone", { length: 20 }),
+  role: varchar("role", { length: 20 }).notNull().default("member"),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+export const categories = pgTable("categories", {
+  id: serial("id").primaryKey(),
+  name: varchar("name", { length: 60 }).notNull().unique(),
+  description: text("description"),
+  image: text("image"),
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });

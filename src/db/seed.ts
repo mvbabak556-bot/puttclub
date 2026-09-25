@@ -1,7 +1,7 @@
 import "dotenv/config";
 import { createHash } from "crypto";
 import { db } from "./index";
-import { orders, products, reviews, users } from "./schema";
+import { categories, orders, products, reviews, users } from "./schema";
 
 const sha = (s: string) => createHash("sha256").update(s).digest("hex");
 
@@ -459,6 +459,7 @@ export async function seedDatabase(reset = true) {
     await db.delete(orders);
     await db.delete(products);
     await db.delete(users);
+    await db.delete(categories);
   }
 
   for (const p of PRODUCTS) {
@@ -489,7 +490,24 @@ export async function seedDatabase(reset = true) {
     phone: "09123456789",
   });
 
-  console.log("✓ Seed complete: 10 محصولات، دیدگاه‌ها و حساب نمونه (demo@puttclub.ir)");
+  await db.insert(users).values({
+    name: "مدیر فروشگاه",
+    email: "admin@puttclub.ir",
+    password: sha("admin1234"),
+    phone: "09123456780",
+    role: "admin",
+  });
+
+  await db.insert(categories).values([
+    { name: "چوب‌ها", description: "درایور، آیرون، پوتر و وودهای حرفه‌ای", image: "/images/products/driver.jpg" },
+    { name: "توپ‌ها", description: "توپ‌های تور با اسپین و دیستانس بالا", image: "/images/products/balls.jpg" },
+    { name: "کیف‌ها", description: "کیف‌های چرخ‌دار و استند تور", image: "/images/products/bag.jpg" },
+    { name: "کفش و دستکش", description: "کفش گلف و دستکش چرم کابرتا", image: "/images/products/shoes.jpg" },
+    { name: "پوشاک", description: "پولو، شلوار و کاپشن گلف", image: "/images/products/polo.jpg" },
+    { name: "لوازم جانبی", description: "رنج‌فایندر، چتر و اکسسوری", image: "/images/products/rangefinder.jpg" },
+  ]);
+
+  console.log("✓ Seed complete: 10 محصولات، دیدگاه‌ها، دسته‌بندی‌ها و حساب‌ها (demo/admin)");
 }
 
 // فقط وقتی مستقیم با CLI اجرا شود (npx tsx src/db/seed.ts) — نه هنگام ایمپورت

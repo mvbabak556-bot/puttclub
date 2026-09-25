@@ -108,6 +108,7 @@ export async function generateStaticParams() {
   }
 
   rmSync(path.join(root, "out"), { recursive: true, force: true });
+  execSync("node scripts/snapshot-data.mjs", { cwd: root, stdio: "inherit" });
   execSync("npx next build", {
     cwd: root,
     stdio: "inherit",
@@ -121,4 +122,5 @@ export async function generateStaticParams() {
 } finally {
   restore();
   rmSync(path.join(root, "out"), { recursive: true, force: true });
+  rmSync(path.join(root, "public", "data"), { recursive: true, force: true });
 }

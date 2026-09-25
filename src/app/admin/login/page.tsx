@@ -1,0 +1,135 @@
+"use client";
+
+import { useEffect, useState } from "react";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { motion } from "framer-motion";
+import { Flag, Loader2, Lock, Mail, ShieldCheck } from "lucide-react";
+import { DEMO_ADMIN, getAdmin, setAdmin } from "@/lib/admin";
+import { withBase } from "@/lib/public";
+
+export default function AdminLoginPage() {
+  const router = useRouter();
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+
+  useEffect(() => {
+    if (getAdmin()) router.replace("/admin");
+  }, [router]);
+
+  const submit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError("");
+    setLoading(true);
+    try {
+      let res: Response | null = null;
+      try {
+        res = await fetch(withBase("/api/admin/login"), {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ email, password }),
+        });
+      } catch {
+        res = null;
+      }
+      // هاست استاتیک — ورود نمایشی محلی
+      if (!res || res.status === 404 || res.status === 405) {
+        if (
+          email.toLowerCase().trim() === DEMO_ADMIN.email &&
+          password === DEMO_ADMIN.password
+        ) {
+          setAdmin({ id: 0, name: DEMO_ADMIN.name, email: DEMO_ADMIN.email });
+          router.push("/admin");
+          return;
+        }
+        setError("ایمیل یا رمز عبور اشتباه است.");
+        return;
+      }
+      const data = await res.json();
+      if (!res.ok) {
+        setError(data.error || "خطایی رخ داد.");
+        return;
+      }
+      setAdmin(data.user);
+      router.push("/admin");
+    } catch {
+      setError("ارتباط با سرور برقرار نشد.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const inputCls =
+    "h-12 w-full rounded-2xl border border-gold-500/15 bg-forest-950/60 ps-11 pe-4 text-sm text-cream outline-none transition-colors placeholder:text-sage/50 focus:border-gold-500/50";
+
+  return (
+    <div className="flex min-h-screen items-center justify-center px-4 py-16">
+      <motion.div
+        initial={{ opacity: 0, y: 24 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
+        className="w-full max-w-md rounded-[2rem] border border-gold-500/15 bg-forest-900/70 p-8 sm:p-10"
+      >
+        <div className="flex items-center gap-3">
+          <span className="grid size-12 place-items-center rounded-2xl bg-gold-500 text-forest-950">
+            <ShieldCheck size={24} />
+          </span>
+          <div>
+            <h1 className="text-xl font-black">ورود مدیر فروشگاه</h1>
+            <p className="mt-1 text-xs text-sage">داشبورد مدیریتی پات‌کلاب</p>
+          </div>
+        </div>
+
+        <form onSubmit={submit} className="mt-8 space-y-4">
+          <div className="relative">
+            <Mail size={16} className="absolute start-4 top-1/2 -translate-y-1/2 text-sage" />
+            <input
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              placeholder="ایمیل مدیر"
+              dir="ltr"
+              required
+              className={`${inputCls} text-right`}
+            />
+          </div>
+          <div className="relative">
+            <Lock size={16} className="absolute start-4 top-1/2 -translate-y-1/2 text-sage" />
+            <input
+              type="password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              placeholder="رمز عبور"
+              dir="ltr"
+              required
+              className={`${inputCls} text-right`}
+            />
+          </div>
+          {error && <p className="text-sm font-bold text-red-400">{error}</p>}
+          <button
+            type="submit"
+            disabled={loading}
+            className="inline-flex h-13 w-full items-center justify-center gap-2 rounded-full bg-gold-500 text-sm font-black text-forest-950 transition-colors hover:bg-gold-400 disabled:opacity-60"
+          >
+            {loading ? <Loader2 size={17} className="animate-spin" /> : <ShieldCheck size={17} />}
+            ورود به داشبورد
+          </button>
+        </form>
+
+        <div className="mt-6 rounded-2xl border border-dashed border-gold-500/30 bg-forest-950/50 p-4 text-xs leading-6 text-sage">
+          <span className="font-bold text-gold-300">حساب مدیر نمونه:</span>
+          <span dir="ltr" className="block">admin@puttclub.ir / admin1234</span>
+        </div>
+
+        <p className="mt-6 text-center text-xs text-sage">
+          <Link href="/" className="inline-flex items-center gap-1.5 transition-colors hover:text-gold-300">
+            <Flag size={12} />
+            بازگشت به فروشگاه
+          </Link>
+        </p>
+      </motion.div>
+    </div>
+  );
+}
