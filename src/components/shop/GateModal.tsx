@@ -18,6 +18,10 @@ export default function GateModal({
   gate: PublicGate;
   onBack?: () => void;
 }) {
+  const opacity = Math.min(95, Math.max(0, gate.overlayOpacity ?? 60));
+  const blur = Math.min(24, Math.max(0, gate.overlayBlur ?? 16));
+  const backdropFilter = `blur(${blur}px) brightness(60%) saturate(60%)`;
+
   return (
     <motion.div
       initial={{ opacity: 0 }}
@@ -29,15 +33,24 @@ export default function GateModal({
       aria-label={gate.title}
       className="fixed inset-0 z-[90] flex items-center justify-center overflow-y-auto p-4"
     >
-      {/* لایه مات + بلور: صفحه پشت دیده می‌شود ولی تار و کم‌نور است */}
+      {/* لایه مات + بلور: صفحه پشت دیده می‌شود ولی تار و کم‌نور است.
+          میزان تیرگی و بلور از پنل فروشگاه (تب پاپ‌آپ فروشگاه) قابل تنظیم است */}
       <div
         aria-hidden
-        className="absolute inset-0 bg-forest-950/60 backdrop-blur-xl backdrop-brightness-50 backdrop-saturate-50"
+        className="absolute inset-0"
+        style={{
+          backgroundColor: `rgba(5, 13, 9, ${opacity / 100})`,
+          backdropFilter,
+          WebkitBackdropFilter: backdropFilter,
+        }}
       />
-      {/* وینیت ملایم برای حس تیرگی بیشتر در لبه‌ها */}
+      {/* وینیت ملایم برای حس تیرگی بیشتر در لبه‌ها — متناسب با تیرگی انتخابی */}
       <div
         aria-hidden
-        className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_center,transparent_0%,rgba(5,13,9,0.5)_100%)]"
+        className="pointer-events-none absolute inset-0"
+        style={{
+          background: `radial-gradient(ellipse at center, transparent 0%, rgba(5, 13, 9, ${(0.2 + (opacity / 95) * 0.4).toFixed(2)}) 100%)`,
+        }}
       />
       <motion.div
         initial={{ opacity: 0, y: 32, scale: 0.97 }}

@@ -116,6 +116,8 @@ export interface SiteSettings {
     message: string;
     backLabel: string;
     code: string;
+    overlayOpacity: number;
+    overlayBlur: number;
   };
 }
 
@@ -206,6 +208,8 @@ export const DEFAULT_SITE_SETTINGS: SiteSettings = {
       "فروشگاه پات‌کلاب در حال آماده‌سازی نهایی است و فعلاً فقط به‌صورت آزمایشی باز است؛ سفارش‌ها در این مرحله نهایی نمی‌شوند. از شکیبایی شما سپاسگزاریم — به‌زودی با فروشگاه کامل در خدمتیم.",
     backLabel: "برگشت به سایت",
     code: "B",
+    overlayOpacity: 60,
+    overlayBlur: 16,
   },
 };
 

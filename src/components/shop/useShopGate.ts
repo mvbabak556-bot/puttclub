@@ -18,6 +18,8 @@ export interface PublicGate {
   title: string;
   message: string;
   backLabel: string;
+  overlayOpacity: number;
+  overlayBlur: number;
 }
 
 export function toPublicGate(v: unknown): PublicGate {
@@ -26,6 +28,13 @@ export function toPublicGate(v: unknown): PublicGate {
   const bool = (k: string, fb: boolean) => (typeof o[k] === "boolean" ? (o[k] as boolean) : fb);
   const str = (k: string, fb: string) =>
     typeof o[k] === "string" && (o[k] as string) ? (o[k] as string) : fb;
+  const num = (k: string, fb: number, min: number, max: number) => {
+    const raw = o[k];
+    const n =
+      typeof raw === "number" ? raw : typeof raw === "string" && raw !== "" ? Number(raw) : NaN;
+    if (!Number.isFinite(n)) return fb;
+    return Math.min(max, Math.max(min, Math.round(n)));
+  };
   return {
     enabled: bool("enabled", d.enabled),
     showOnShop: bool("showOnShop", d.showOnShop),
@@ -33,6 +42,8 @@ export function toPublicGate(v: unknown): PublicGate {
     title: str("title", d.title),
     message: str("message", d.message),
     backLabel: str("backLabel", d.backLabel),
+    overlayOpacity: num("overlayOpacity", d.overlayOpacity, 0, 95),
+    overlayBlur: num("overlayBlur", d.overlayBlur, 0, 24),
   };
 }
 
